@@ -1,0 +1,7 @@
+common:
+  db_uri: "postgres://postgres:admin1234@localhost:5432/peonbot"
+  redis_uri: "redis://localhost:6379/0"
+
+tgbot:
+  bot_token: ""
+
