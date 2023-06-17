@@ -2,11 +2,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"gotgpeon/config"
 	"gotgpeon/db"
 	"gotgpeon/logger"
 	"gotgpeon/pkg/tgbot"
+	"net/http"
 )
 
 var configPath string
@@ -23,27 +23,30 @@ func main() {
 		panic("Loading config error path:" + configPath)
 	}
 
-	conf := config.GetConfig()
+	cfg := config.GetConfig()
 	// Initialize Logger
 	err = logger.InitLogger()
-
 	if err != nil {
 		panic("Initialize Logger err:" + err.Error())
 	}
 
 	// Initialize database and redis connection.
-	err = db.InitDbConn(&conf.Common)
+	err = db.InitDbConn(&cfg.Common)
 	if err != nil {
 		panic("Initialize Database connection err:" + err.Error())
 	}
 
 	// Initialize Bot
-	bot, err := tgbot.InitTgBot(&config.GetConfig().TgBot)
+	_, err = tgbot.InitTgBot(&config.GetConfig().TgBot)
 	if err != nil {
 		panic("Initialize telegram bot err:" + err.Error())
 	}
-
 	logger.Info("Initialize finished.")
-	fmt.Println(bot.Poller)
-	bot.Start()
+
+	// Start a http server for listen update
+	err = http.ListenAndServe(cfg.Common.ListenPort, nil)
+	if err != nil {
+		logger.Error("Listen hook err" + err.Error())
+	}
+
 }

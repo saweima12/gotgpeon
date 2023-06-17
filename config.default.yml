@@ -1,7 +1,8 @@
 common:
+  listen_port: 9000
   db_uri: "postgres://postgres:admin1234@localhost:5432/peonbot"
   redis_uri: "redis://localhost:6379/0"
 
 tgbot:
+  auto_set_webhook: true
   bot_token: ""
-

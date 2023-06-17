@@ -1,8 +1,6 @@
 package logger
 
 import (
-	"fmt"
-
 	"go.uber.org/zap"
 )
 
@@ -13,10 +11,8 @@ func InitLogger() error {
 	logger, err := zap.NewProduction()
 
 	if err != nil {
-		fmt.Println("failed to initialize logger.")
 		return err
 	}
-
 	instance = logger.Sugar()
 	return nil
 }
