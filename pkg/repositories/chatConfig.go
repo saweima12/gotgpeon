@@ -5,16 +5,18 @@ import (
 	"gorm.io/gorm"
 )
 
-type ChatConfigRepository struct {
+type ChatConfigRepository interface {
+}
+
+type chatConfigRepository struct {
 	BaseRepository
 }
 
-func NewChatConfigRepo(dbConn *gorm.DB, redisConn *redis.Client) *ChatConfigRepository {
-	return &ChatConfigRepository{
+func NewChatConfigRepo(dbConn *gorm.DB, redisConn *redis.Client) ChatConfigRepository {
+	return &chatConfigRepository{
 		BaseRepository: BaseRepository{DbConn: dbConn, RedisConn: redisConn},
 	}
 }
 
-func (repo *ChatConfigRepository) GetChatConfig(chatId string) {
-
+func (repo *chatConfigRepository) GetChatConfig(chatId string) {
 }

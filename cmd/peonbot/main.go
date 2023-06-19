@@ -36,11 +36,16 @@ func main() {
 		panic("Initialize Database connection err:" + err.Error())
 	}
 
-	// Initialize Bot
-	_, err = tgbot.InitTgBot(&config.GetConfig().TgBot)
+	// Initialize Bot & Add webhook
+	botClient, err := tgbot.InitTgBot(&config.GetConfig().TgBot)
 	if err != nil {
 		panic("Initialize telegram bot err:" + err.Error())
 	}
+
+	// Add Webhook route and launche update process.
+	client := tgbot.StartUpdateProcess(cfg.TgBot.BotToken, botClient)
+	// When shutdown timing, close the UpdateProcess
+	defer client.Stop()
 	logger.Info("Initialize finished.")
 
 	// Start a http server for listen update

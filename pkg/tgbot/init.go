@@ -1,9 +1,10 @@
 package tgbot
 
 import (
-	"fmt"
 	"gotgpeon/config"
+	"gotgpeon/db"
 	"gotgpeon/models"
+	"gotgpeon/pkg/tgbot/handler"
 	"gotgpeon/utils"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -17,41 +18,33 @@ func InitTgBot(cfg *config.TgBotConfig) (*tgbotapi.BotAPI, error) {
 	}
 
 	if cfg.AutoSetWebhook {
-		err = SetWebhook(cfg, bot)
+		err = SetWebhook(cfg.HookURL, bot)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	// Get update channel.
-	ch := bot.ListenForWebhook("/" + bot.Token)
+	return bot, err
+}
 
-	// Tgbot Client
-	client := models.TgBotClient{
-		BotAPI:     bot,
+func StartUpdateProcess(botToken string, botAPI *tgbotapi.BotAPI) *models.TgbotUpdateProcess {
+	// Get update channel.
+	ch := botAPI.ListenForWebhook("/" + botToken)
+
+	// Get updateProcess instance.
+	process := models.TgbotUpdateProcess{
+		BotAPI:     botAPI,
 		QuitChan:   make(chan bool),
 		UpdateChan: ch,
 	}
 
-	go ProcessUpdate(&client)
-	return bot, nil
+	go runUpdateProcess(&process, botAPI)
+	return &process
 }
 
-func ProcessUpdate(c *models.TgBotClient) {
-	for {
-		select {
-		case <-c.QuitChan:
-			return
-		case update := <-c.UpdateChan:
-			fmt.Println(update)
-		default:
-		}
-	}
-}
-
-func SetWebhook(cfg *config.TgBotConfig, bot *tgbotapi.BotAPI) error {
+func SetWebhook(hookURL string, bot *tgbotapi.BotAPI) error {
 	// Try set webhook
-	webhook, err := tgbotapi.NewWebhook(cfg.HookURL)
+	webhook, err := tgbotapi.NewWebhook(hookURL)
 	if err != nil {
 		return err
 	}
@@ -67,4 +60,36 @@ func SetWebhook(cfg *config.TgBotConfig, bot *tgbotapi.BotAPI) error {
 	}
 
 	return nil
+}
+
+func ProcessUpdate(msgHandler handler.MessageHandler, update tgbotapi.Update, botAPI *tgbotapi.BotAPI) {
+
+	if update.Message != nil {
+		msgHandler.HandleMessage(update.Message, botAPI)
+	}
+
+	if update.EditedMessage != nil {
+		msgHandler.HandleMessage(update.EditedMessage, botAPI)
+	}
+
+}
+
+func runUpdateProcess(c *models.TgbotUpdateProcess, botAPI *tgbotapi.BotAPI) {
+
+	dbConn := db.GetDB()
+	cacheConn := db.GetCache()
+	// Create handler.
+	msgHandler := handler.NewMessageHandler(dbConn, cacheConn)
+
+	for {
+		select {
+		case <-c.QuitChan:
+			return
+		case update := <-c.UpdateChan:
+			{
+				ProcessUpdate(msgHandler, update, botAPI)
+			}
+		default:
+		}
+	}
 }

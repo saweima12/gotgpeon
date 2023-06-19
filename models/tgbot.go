@@ -4,12 +4,14 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-type TgBotClient struct {
+type TgbotUpdateProcess struct {
 	BotAPI     *tgbotapi.BotAPI
 	QuitChan   chan bool
 	UpdateChan tgbotapi.UpdatesChannel
 }
 
-func (c *TgBotClient) Stop() {
-	c.QuitChan <- true
+func (c *TgbotUpdateProcess) Stop() {
+	if c.QuitChan != nil {
+		c.QuitChan <- true
+	}
 }
