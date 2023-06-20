@@ -6,19 +6,39 @@ import (
 )
 
 type BotConfigRepository interface {
-	GetChatConfig(chatId string)
+	GetWhiteList(chatId string)
+	SetWhiteListCache(chatId string)
+	SetWhiteListDB(chatId string)
+	GetViolateRecord(chatId string, userId string)
+	SetViolateCache(chatId string, userId string)
+}
+
+type botConfigRepository struct {
+	BaseRepository
 }
 
 func NewBotConfigRepo(dbConn *gorm.DB, redisConn *redis.Client) BotConfigRepository {
-	return &botConfigRepositroy{
+	return &botConfigRepository{
 		BaseRepository: BaseRepository{DbConn: dbConn, RedisConn: redisConn},
 	}
 }
 
-type botConfigRepositroy struct {
-	BaseRepository
+func (repo *botConfigRepository) GetWhiteList(chatId string) {
+	panic("not implemented") // TODO: Implement
 }
 
-func (repo *botConfigRepositroy) GetChatConfig(chatId string) {
+func (repo *botConfigRepository) SetWhiteListCache(chatId string) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (repo *botConfigRepository) SetWhiteListDB(chatId string) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (botconfigrepositroy *botConfigRepository) GetViolateRecord(chatId string, userId string) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (botconfigrepositroy *botConfigRepository) SetViolateCache(chatId string, userId string) {
 	panic("not implemented") // TODO: Implement
 }

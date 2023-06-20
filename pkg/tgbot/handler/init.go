@@ -17,7 +17,6 @@ type messageHandler struct {
 
 func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler {
 	// TODO: Initialize Repository and service.
-
 	return &messageHandler{}
 }
 

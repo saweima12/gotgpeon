@@ -8,8 +8,12 @@ import (
 type RecordRepository interface {
 }
 
-type recordRepository struct{}
+type recordRepository struct {
+	BaseRepository
+}
 
 func NewRecordRepository(dbConn *gorm.DB, cacheConn *redis.Client) RecordRepository {
-	return &recordRepository{}
+	return &recordRepository{
+		BaseRepository: BaseRepository{DbConn: dbConn, RedisConn: cacheConn},
+	}
 }

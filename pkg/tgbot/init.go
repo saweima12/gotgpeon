@@ -63,15 +63,12 @@ func SetWebhook(hookURL string, bot *tgbotapi.BotAPI) error {
 }
 
 func ProcessUpdate(msgHandler handler.MessageHandler, update tgbotapi.Update, botAPI *tgbotapi.BotAPI) {
-
 	if update.Message != nil {
 		msgHandler.HandleMessage(update.Message, botAPI)
 	}
-
 	if update.EditedMessage != nil {
 		msgHandler.HandleMessage(update.EditedMessage, botAPI)
 	}
-
 }
 
 func runUpdateProcess(c *models.TgbotUpdateProcess, botAPI *tgbotapi.BotAPI) {

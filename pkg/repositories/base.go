@@ -1,9 +1,13 @@
 package repositories
 
 import (
+	"context"
+
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
+
+var baseCtx = context.Background()
 
 type BaseRepository struct {
 	DbConn    *gorm.DB
