@@ -1,8 +1,12 @@
 package entity
 
-import "gorm.io/datatypes"
+import (
+	"gorm.io/datatypes"
+	"gorm.io/gorm"
+)
 
 type PeonBehaviorRecord struct {
+	gorm.Model
 	ChatId      string         `gorm:"chat_id"`
 	UserId      string         `gorm:"user_id"`
 	FullName    string         `gorm:"full_name"`
