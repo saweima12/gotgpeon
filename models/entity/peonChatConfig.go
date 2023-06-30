@@ -2,11 +2,9 @@ package entity
 
 import (
 	"gorm.io/datatypes"
-	"gorm.io/gorm"
 )
 
 type PeonChatConfig struct {
-	gorm.Model
 	ChatId         string         `gorm:"chat_id"`
 	Status         string         `gorm:"status"`
 	ChatName       string         `gorm:"chat_name"`

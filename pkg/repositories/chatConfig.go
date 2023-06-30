@@ -76,10 +76,16 @@ func (repo *chatConfigRepository) SetConfigCache(chatId string, value *models.Ch
 }
 
 func (repo *chatConfigRepository) SetConfigDb(chatId string, value *models.ChatConfig) {
-	repo.GetDB().Clauses(clause.OnConflict{
+	err := repo.GetDB().Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "chat_id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"config_json", "attatch_json"}),
-	}).Create(&value)
+	}).Create(&value).Error
+
+	if err != nil {
+		logger.Errorf("SetConfigDb error: %s", err.Error())
+		return
+	}
+
 }
 
 func (repo *chatConfigRepository) getNameSpace(chatId string) string {

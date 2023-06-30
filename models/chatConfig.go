@@ -2,6 +2,7 @@ package models
 
 type ChatConfig struct {
 	Status           string
+	ChatId           string
 	ChatName         string
 	SeniorCount      int
 	JuniorDay        int
@@ -10,9 +11,11 @@ type ChatConfig struct {
 	AdminStrators    []string
 }
 
-func NewDefaultChatConfig(chatName string, adminstrators []string) *ChatConfig {
+func NewDefaultChatConfig(chatId string, chatName string, adminstrators []string) *ChatConfig {
+
 	return &ChatConfig{
-		Status:           OK,
+		Status:           NG,
+		ChatId:           chatId,
 		ChatName:         chatName,
 		SeniorCount:      300,
 		JuniorDay:        7,
