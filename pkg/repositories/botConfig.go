@@ -3,7 +3,6 @@ package repositories
 import (
 	"gotgpeon/logger"
 	"gotgpeon/models/entity"
-	"gotgpeon/utils/maputil"
 
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -11,11 +10,9 @@ import (
 )
 
 type BotConfigRepository interface {
-	GetWhiteList(chatId string) map[string]struct{}
-	SetWhiteListCache(chatId string) error
-	SetWhiteListDB(chatId string) error
-	GetViolateRecord(chatId string, userId string)
-	SetViolateCache(chatId string, userId string)
+	GetWhiteList() map[string]byte
+	SetWhiteListCache(whitelistSet map[string]byte) error
+	SetWhiteListDBWithUserId(userId string, isEnable byte) error
 }
 
 type botConfigRepository struct {
@@ -28,16 +25,17 @@ func NewBotConfigRepo(dbConn *gorm.DB, redisConn *redis.Client) BotConfigReposit
 	}
 }
 
-func (repo *botConfigRepository) GetWhiteList(chatId string) map[string]string {
+func (repo *botConfigRepository) GetWhiteList() map[string]byte {
 	namespace := getNamespace("whitelist")
 
-	result := make(map[string]string)
+	result := make(map[string]byte)
 	// Attempt read from cache.
-	resp, err := repo.GetRedis().SMembers(baseCtx, namespace).Result()
-	if err == nil && len(resp) >= 1 {
+	rdb := repo.GetRedis()
+	resp, err := rdb.SMembers(baseCtx, namespace).Result()
+	if err == nil {
 		// Generate result.
 		for _, v := range resp {
-			result[v] = "ok"
+			result[v] = 1
 		}
 		return result
 	}
@@ -55,19 +53,21 @@ func (repo *botConfigRepository) GetWhiteList(chatId string) map[string]string {
 
 	// Generate Result.
 	for _, v := range rows {
-    if v.Status == "ok" {
-      result[v.UserId] = "ok"
-    }
+		if v.Status == "ok" {
+			result[v.UserId] = 1
+		}
 	}
 
+	// Save to cache.
+	repo.SetWhiteListCache(result)
 	return result
 }
 
-func (repo *botConfigRepository) SetWhiteListCache(chatId string, whitelistSet map[string]struct{}) error {
+func (repo *botConfigRepository) SetWhiteListCache(whitelistSet map[string]byte) error {
 	namespace := getNamespace("whitelist")
 
 	// Convert mapKey to interface slice.
-	keySlice := maputil.GetMapSetKeys(whitelistSet)
+	keySlice := mapKeyToSlice(whitelistSet)
 	iSlice := make([]interface{}, len(keySlice))
 	for i, v := range keySlice {
 		iSlice[i] = v
@@ -83,35 +83,55 @@ func (repo *botConfigRepository) SetWhiteListCache(chatId string, whitelistSet m
 	return nil
 }
 
-func (repo *botConfigRepository) SetWhiteListDB(chatId string, whitelistSet map[string]struct{}) error {
-  tableName := entity.PeonUserWhitelist{}.TableName()
-  db := repo.GetDB()
+func (repo *botConfigRepository) SetWhiteListDBWithUserId(userId string, isEnable byte) error {
 
-  for uid, status := range whitelistSet {
-    newItem := entity.PeonUserWhitelist {
-      UserId: uid,
-      Status: status,
-    }
+	isOK := "ok"
+	if isEnable != 1 {
+		isOK = "ng"
+	}
 
-    err := db.Clauses(clause.OnConflict{
-      Columns: clause.Column{ Name: "user_id" },
-      DoUpdates: clause.Assignment(map[string]interface{}{"status" : status})
-    }).Create(newItem).Error
+	value := entity.PeonUserWhitelist{
+		UserId: userId,
+		Status: isOK,
+	}
 
+	err := repo.GetDB().Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "chat_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"config_json", "attatch_json"}),
+	}).Create(&value).Error
 
-    if err != nil {
-      logger.Errorf("SetWhiteListDB error: %s", err.Error())
-    }
-  }
+	if err != nil {
+		return err
+	}
 
+	return nil
 }
 
-func (botconfigrepositroy *botConfigRepository) GetViolateRecord(chatId string, userId string) {
+func (botconfigrepositroy *botConfigRepository) GetViolateRecord(chatId string, userId string) (int, error) {
+	return 0, nil // TODO Implement
+}
+
+func (botconfigrepositroy *botConfigRepository) SetViolateCache(chatId string, userId string, num int) {
 	panic("not implemented") // TODO: Implement
 }
 
-func (botconfigrepositroy *botConfigRepository) SetViolateCache(chatId string, userId string) {
-	panic("not implemented") // TODO: Implement
+/// ====
+/// Support Function
+/// ====
+func sliceToMapSet(slice []string) map[string]string {
+	var result map[string]string
+	for _, v := range slice {
+		result[v] = "ok"
+	}
+	return result
+}
+
+func mapKeyToSlice(m map[string]byte) []string {
+	result := []string{}
+	for k := range m {
+		result = append(result, k)
+	}
+	return result
 }
 
 func getNamespace(keyword string) string {

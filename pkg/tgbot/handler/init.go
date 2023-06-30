@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"gotgpeon/pkg/repositories"
+	"gotgpeon/pkg/services"
 	"gotgpeon/utils"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -13,11 +15,20 @@ type MessageHandler interface {
 }
 
 type messageHandler struct {
+	peonService services.PeonService
 }
 
 func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler {
-	// TODO: Initialize Repository and service.
-	return &messageHandler{}
+	// Initialize Repositories
+	chatRepo := repositories.NewChatRepo(dbConn, cacheConn)
+	botRepo := repositories.NewBotConfigRepo(dbConn, cacheConn)
+
+	// Initialize Services
+	peonService := services.NewPeonService(chatRepo, botRepo)
+
+	return &messageHandler{
+		peonService: peonService,
+	}
 }
 
 func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI) {
@@ -26,10 +37,6 @@ func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.
 	if helper.IsSuperGroup() {
 		h.handleGroupMessage(helper)
 	}
-}
-
-func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
-
 }
 
 func (h *messageHandler) handleEnterGroupMsg(helper *utils.MessageHelper) {
