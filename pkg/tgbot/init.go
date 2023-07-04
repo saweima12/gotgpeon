@@ -27,7 +27,7 @@ func InitTgBot(cfg *config.TgBotConfig) (*tgbotapi.BotAPI, error) {
 	return bot, err
 }
 
-func StartUpdateProcess(botToken string, botAPI *tgbotapi.BotAPI) *models.TgbotUpdateProcess {
+func StartWebhookProcess(botToken string, botAPI *tgbotapi.BotAPI) *models.TgbotUpdateProcess {
 	// Get update channel.
 	ch := botAPI.ListenForWebhook("/" + botToken)
 
@@ -35,6 +35,20 @@ func StartUpdateProcess(botToken string, botAPI *tgbotapi.BotAPI) *models.TgbotU
 	process := models.TgbotUpdateProcess{
 		BotAPI:     botAPI,
 		QuitChan:   make(chan bool),
+		UpdateChan: ch,
+	}
+
+	go runUpdateProcess(&process, botAPI)
+	return &process
+}
+
+func StartLongPollProcess(botAPI *tgbotapi.BotAPI) *models.TgbotUpdateProcess {
+
+	upCfg := tgbotapi.NewUpdate(0)
+	ch := botAPI.GetUpdatesChan(upCfg)
+
+	process := models.TgbotUpdateProcess{
+		BotAPI:     botAPI,
 		UpdateChan: ch,
 	}
 

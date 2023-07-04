@@ -5,8 +5,7 @@ import (
 	"gotgpeon/config"
 	"gotgpeon/db"
 	"gotgpeon/logger"
-	"gotgpeon/pkg/tgbot"
-	"net/http"
+	"gotgpeon/models/entity"
 )
 
 var configPath string
@@ -23,8 +22,8 @@ func main() {
 		panic("Loading config error path:" + configPath)
 	}
 
-	cfg := config.GetConfig()
 	// Initialize Logger
+	cfg := config.GetConfig()
 	err = logger.InitLogger()
 	if err != nil {
 		panic("Initialize Logger err:" + err.Error())
@@ -36,23 +35,14 @@ func main() {
 		panic("Initialize Database connection err:" + err.Error())
 	}
 
-	// Initialize Bot & Add webhook
-	botClient, err := tgbot.InitTgBot(&config.GetConfig().TgBot)
-	if err != nil {
-		panic("Initialize telegram bot err:" + err.Error())
-	}
+	InitSchema()
+}
 
-	// Add Webhook route and launche update process.
-	client := tgbot.StartLongPollProcess(botClient)
-	// client := tgbot.StartWebhookProcess(cfg.TgBot.BotToken, botClient)
-	// When shutdown timing, close the UpdateProcess
-	defer client.Stop()
-	logger.Info("Initialize finished.")
-
-	// Start a http server for listen update
-	err = http.ListenAndServe(":"+cfg.Common.ListenPort, nil)
-	if err != nil {
-		logger.Error("Listen hook err" + err.Error())
-	}
-
+func InitSchema() {
+	conn := db.GetDB()
+	conn.AutoMigrate(entity.PeonChatConfig{})
+	conn.AutoMigrate(entity.PeonBehaviorRecord{})
+	conn.AutoMigrate(entity.PeonSavedMessage{})
+	conn.AutoMigrate(entity.PeonUserWhitelist{})
+	conn.AutoMigrate(entity.PeonDeletedMessage{})
 }

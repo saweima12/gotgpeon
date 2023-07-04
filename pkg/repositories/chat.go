@@ -33,7 +33,7 @@ func NewChatRepo(dbConn *gorm.DB, redisConn *redis.Client) ChatRepository {
 // Load GroupChat Configuration.
 func (repo *chatRepository) GetChatConfig(chatId string) (*models.ChatConfig, error) {
 
-	var result models.ChatConfig
+	var result *models.ChatConfig
 	configKey := repo.getConfigNameSpace(chatId)
 
 	rdb := repo.GetRedis()
@@ -45,7 +45,7 @@ func (repo *chatRepository) GetChatConfig(chatId string) (*models.ChatConfig, er
 			logger.Errorf("GetChatConfig Unmarshal err: %s", err.Error())
 			return nil, err
 		}
-		return &result, nil
+		return result, nil
 	}
 
 	// Redis don't have cache. Try load from database.
@@ -53,22 +53,19 @@ func (repo *chatRepository) GetChatConfig(chatId string) (*models.ChatConfig, er
 	err = repo.GetDB().Table(configEntity.TableName()).
 		Select("*").
 		Where("chat_id = ?", chatId).
-		First(&configEntity).Error
-	if err != nil {
-		logger.Errorf("GetChatConfig DB err: %s", err.Error())
-	}
+		Take(&configEntity).Error
 
-	err = json.Unmarshal(configEntity.ConfigJson, &configEntity)
 	if err != nil {
-		logger.Errorf("GetChatConfig UnmarshalDB err: %s", err.Error())
 		return nil, err
 	}
 
-	// Save to cache.
-	dataByte, err := json.Marshal(configEntity.ConfigJson)
-	rdb.Set(baseCtx, configKey, dataByte, 0)
+	err = json.Unmarshal(configEntity.ConfigJson, &result)
+	if err != nil {
+		logger.Errorf("GetChatConfig Unmarshal err: %s", err.Error())
+		return nil, err
+	}
 
-	return &result, nil
+	return result, nil
 }
 
 func (repo *chatRepository) SetConfigCache(chatId string, value *models.ChatConfig) error {
@@ -84,7 +81,6 @@ func (repo *chatRepository) SetConfigCache(chatId string, value *models.ChatConf
 		logger.Errorf("SetConfigCache error: %s", err.Error())
 		return err
 	}
-
 	return nil
 }
 

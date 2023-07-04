@@ -10,7 +10,6 @@ import (
 func InitRedis(redisUri string) (*redis.Client, error) {
 
 	uri, err := url.Parse(redisUri)
-
 	if err != nil {
 		return nil, err
 	}

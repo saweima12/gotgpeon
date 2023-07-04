@@ -12,7 +12,6 @@ type ChatConfig struct {
 }
 
 func NewDefaultChatConfig(chatId string, chatName string, adminstrators []string) *ChatConfig {
-
 	return &ChatConfig{
 		Status:           NG,
 		ChatId:           chatId,

@@ -14,4 +14,8 @@ func (c *TgbotUpdateProcess) Stop() {
 	if c.QuitChan != nil {
 		c.QuitChan <- true
 	}
+
+	if c.BotAPI != nil {
+		c.BotAPI.StopReceivingUpdates()
+	}
 }

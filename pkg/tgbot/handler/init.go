@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"gotgpeon/logger"
+	"gotgpeon/models"
 	"gotgpeon/pkg/repositories"
 	"gotgpeon/pkg/services"
 	"gotgpeon/utils"
@@ -15,27 +17,55 @@ type MessageHandler interface {
 }
 
 type messageHandler struct {
-	peonService services.PeonService
+	peonService   services.PeonService
+	recordService services.RecordService
 }
 
 func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler {
 	// Initialize Repositories
 	chatRepo := repositories.NewChatRepo(dbConn, cacheConn)
 	botRepo := repositories.NewBotConfigRepo(dbConn, cacheConn)
+	recordRepo := repositories.NewRecordRepository(dbConn, cacheConn)
 
 	// Initialize Services
 	peonService := services.NewPeonService(chatRepo, botRepo)
+	recordService := services.NewRecordService(recordRepo)
 
 	return &messageHandler{
-		peonService: peonService,
+		peonService:   peonService,
+		recordService: recordService,
 	}
 }
 
 func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI) {
 	helper := utils.NewMessageHelper(message)
 
+	logger.Info(message)
+
 	if helper.IsSuperGroup() {
 		h.handleGroupMessage(helper)
+	}
+}
+
+func (h *messageHandler) getMessageContext(helper *utils.MessageHelper, chatCfg *models.ChatConfig) *models.MessageContext {
+
+	chatId := helper.ChatId()
+	userId := helper.UserId()
+
+	// Check userid in the allowList.
+	isAllowlist := h.peonService.IsAllowListUser(userId)
+
+	// Query UserRecord.
+	recordQuery := &models.MessageRecord{
+		UserId:   userId,
+		FullName: helper.FullName(),
+	}
+	userRecord := h.recordService.GetUserRecord(chatId, recordQuery)
+
+	return &models.MessageContext{
+		ChatCfg:     chatCfg,
+		IsWhitelist: isAllowlist,
+		Record:      userRecord,
 	}
 }
 

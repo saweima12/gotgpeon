@@ -6,6 +6,7 @@ type Configuration struct {
 }
 
 type CommonConfig struct {
+	Mode       string `yaml:"mode"`
 	ListenPort string `yaml:"listen_port"`
 	RedisUri   string `yaml:"redis_uri"`
 	DBUri      string `yaml:"db_uri"`

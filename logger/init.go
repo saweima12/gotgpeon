@@ -8,7 +8,10 @@ var instance *zap.SugaredLogger
 
 // Initialize logger instance.
 func InitLogger() error {
-	logger, err := zap.NewProduction()
+	logger, err := zap.NewProduction(
+		zap.AddCaller(),
+		zap.AddCallerSkip(1),
+	)
 
 	if err != nil {
 		return err

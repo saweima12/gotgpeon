@@ -1,26 +1,27 @@
 package handler
 
 import (
-	"gotgpeon/models"
+	"gotgpeon/logger"
 	"gotgpeon/utils"
-	"strconv"
 )
 
 func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 
-}
+	chatId := helper.ChatId()
+	// Check chat is avaliable
+	chatCfg := h.peonService.GetChatConfig(chatId, helper.Chat.Title)
+	// isAllowUser := h.peonService.IsAllowListUser(helper.UserId())
 
-func (h *messageHandler) getMessageContext(helper *utils.MessageHelper) {
+	// if chatCfg.Status != models.OK && !isAllowUser {
+	// 	return
+	// }
 
-	chatId := strconv.Itoa(int(helper.Chat.ID))
-	chatName := helper.Chat.Title
+	ctx := h.getMessageContext(helper, chatCfg)
 
-	userId := strconv.Itoa(int(helper.From.ID))
+	// TODO: Check message data.
 
-	// Get data
-	chatCfg := h.peonService.GetChatConfig(chatId, chatName)
-
-	return models.MessageContext{
-		ChatCfg: chatCfg,
+	err := h.recordService.SetUserRecord(chatId, ctx.Record)
+	if err != nil {
+		logger.Errorf("HandleGroupMessage Err: %s", err.Error())
 	}
 }
