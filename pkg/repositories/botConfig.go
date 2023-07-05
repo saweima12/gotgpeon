@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"gotgpeon/logger"
 	"gotgpeon/models/entity"
 
@@ -27,12 +28,11 @@ func NewBotConfigRepo(dbConn *gorm.DB, redisConn *redis.Client) BotConfigReposit
 
 func (repo *botConfigRepository) GetWhiteList() map[string]byte {
 	namespace := getNamespace("whitelist")
-
 	result := make(map[string]byte)
 	// Attempt read from cache.
 	rdb := repo.GetRedis()
 	resp, err := rdb.SMembers(baseCtx, namespace).Result()
-	if err == nil {
+	if err == nil && len(resp) > 0 {
 		// Generate result.
 		for _, v := range resp {
 			result[v] = 1
@@ -46,6 +46,7 @@ func (repo *botConfigRepository) GetWhiteList() map[string]byte {
 
 	// Read from database.
 	err = repo.GetDB().Table(tableName).Where("status = ?", "ok").Find(&rows).Error
+	fmt.Println(rows)
 	if err != nil {
 		logger.Error("Bot GetWhitelist Err:" + err.Error())
 		return result

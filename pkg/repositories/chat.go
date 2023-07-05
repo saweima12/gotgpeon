@@ -61,11 +61,10 @@ func (repo *chatRepository) GetChatConfig(chatId string) (*models.ChatConfig, er
 
 	err = json.Unmarshal(configEntity.ConfigJson, &result)
 	if err != nil {
-		logger.Errorf("GetChatConfig Unmarshal err: %s", err.Error())
 		return nil, err
 	}
 
-	return result, nil
+	return nil, err
 }
 
 func (repo *chatRepository) SetConfigCache(chatId string, value *models.ChatConfig) error {
@@ -85,10 +84,24 @@ func (repo *chatRepository) SetConfigCache(chatId string, value *models.ChatConf
 }
 
 func (repo *chatRepository) SetConfigDb(chatId string, value *models.ChatConfig) {
-	err := repo.GetDB().Clauses(clause.OnConflict{
+
+	bytes, err := json.Marshal(value)
+	if err != nil {
+		logger.Errorf("SetConfigDb Marshal error: %s", err.Error())
+		return
+	}
+
+	entityCfg := entity.PeonChatConfig{
+		ChatId:     chatId,
+		Status:     value.Status,
+		ChatName:   value.ChatName,
+		ConfigJson: bytes,
+	}
+
+	err = repo.GetDB().Model(&entityCfg).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "chat_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"config_json", "attatch_json"}),
-	}).Create(&value).Error
+		DoUpdates: clause.AssignmentColumns([]string{"status", "chat_name", "config_json"}),
+	}).Create(&entityCfg).Error
 
 	if err != nil {
 		logger.Errorf("SetConfigDb error: %s", err.Error())

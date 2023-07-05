@@ -25,7 +25,6 @@ func NewPeonService(chatRepo repositories.ChatRepository, botRepo repositories.B
 }
 
 func (s peonService) GetChatConfig(chatId string, chatName string) *models.ChatConfig {
-
 	chatCfg, err := s.chatRepo.GetChatConfig(chatId)
 	if err != nil {
 		chatCfg = models.NewDefaultChatConfig(chatId, chatName, []string{})
@@ -35,15 +34,14 @@ func (s peonService) GetChatConfig(chatId string, chatName string) *models.ChatC
 
 func (s peonService) SetChatConfig(newCfg *models.ChatConfig) {
 	chatId := newCfg.ChatId
-	// Save to cache.
-	s.chatRepo.SetConfigCache(chatId, newCfg)
 	// Save to database.
 	s.chatRepo.SetConfigDb(chatId, newCfg)
+	// Save to cache.
+	s.chatRepo.SetConfigCache(chatId, newCfg)
 }
 
 func (s *peonService) GetBotAllowlist() map[string]byte {
-	allowList := s.botRepo.GetWhiteList()
-	return allowList
+	return s.botRepo.GetWhiteList()
 }
 
 func (s *peonService) IsAllowListUser(userId string) bool {

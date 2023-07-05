@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/repositories"
 	"gotgpeon/pkg/services"
@@ -17,6 +16,7 @@ type MessageHandler interface {
 }
 
 type messageHandler struct {
+	commandMap    map[string]func(helper *utils.MessageHelper)
 	peonService   services.PeonService
 	recordService services.RecordService
 }
@@ -31,26 +31,35 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler 
 	peonService := services.NewPeonService(chatRepo, botRepo)
 	recordService := services.NewRecordService(recordRepo)
 
-	return &messageHandler{
+	result := &messageHandler{
 		peonService:   peonService,
 		recordService: recordService,
 	}
+
+	// Initialize command map
+	result.commandMap = result.initGroupCommandMap()
+	return result
 }
 
 func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI) {
-	helper := utils.NewMessageHelper(message)
-
-	logger.Info(message)
+	helper := utils.NewMessageHelper(message, bot)
 
 	if helper.IsSuperGroup() {
+		// Check if message is a command.
+		if helper.IsCommand() {
+			h.handleGroupCommand(helper)
+			return
+		}
+
+		// message is not a command, check process.
 		h.handleGroupMessage(helper)
 	}
 }
 
 func (h *messageHandler) getMessageContext(helper *utils.MessageHelper, chatCfg *models.ChatConfig) *models.MessageContext {
 
-	chatId := helper.ChatId()
-	userId := helper.UserId()
+	chatId := helper.ChatIdStr()
+	userId := helper.UserIdStr()
 
 	// Check userid in the allowList.
 	isAllowlist := h.peonService.IsAllowListUser(userId)
