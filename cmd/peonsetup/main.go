@@ -41,7 +41,10 @@ func main() {
 func InitSchema() {
 	conn := db.GetDB()
 	conn.AutoMigrate(entity.PeonChatConfig{})
+	conn.Exec("ALTER TABLE public.peon_chat_config ADD CONSTRAINT peon_chat_config_un UNIQUE (chat_id);")
+	// Create PeonBehaviorRecord and constrains
 	conn.AutoMigrate(entity.PeonBehaviorRecord{})
+	conn.Exec("ALTER TABLE public.peon_behavior_record ADD CONSTRAINT peon_behavior_record_un UNIQUE (chat_id,user_id);")
 	conn.AutoMigrate(entity.PeonSavedMessage{})
 	conn.AutoMigrate(entity.PeonUserWhitelist{})
 	conn.AutoMigrate(entity.PeonDeletedMessage{})
