@@ -5,6 +5,7 @@ import (
 )
 
 type PeonUserWhitelist struct {
+	ID         uint           `gorm:"primarykey"`
 	UserId     string         `gorm:"user_id"`
 	Status     string         `gorm:"status"`
 	CreateDate datatypes.Time `gorm:"create_date"`

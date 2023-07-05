@@ -5,7 +5,8 @@ import (
 )
 
 type PeonChatConfig struct {
-	ChatId         string         `gorm:"chat_id"`
+	ID             uint           `gorm:"primarykey"`
+	ChatId         string         `gorm:"chat_id, type:varchar(40)"`
 	Status         string         `gorm:"status"`
 	ChatName       string         `gorm:"chat_name"`
 	ConfigJson     datatypes.JSON `gorm:"config_json"`

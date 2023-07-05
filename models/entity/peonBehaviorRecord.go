@@ -8,8 +8,8 @@ import (
 
 type PeonBehaviorRecord struct {
 	ID          uint      `gorm:"primarykey"`
-	ChatId      string    `gorm:"column:chat_id; type:varchar(40); unique"`
-	UserId      string    `gorm:"column:user_id; type:varchar(40); unique"`
+	ChatId      string    `gorm:"column:chat_id; type:varchar(40); index:idx_member,priority:1,unique"`
+	UserId      string    `gorm:"column:user_id; type:varchar(40); index:idx_member,priority:2,unique"`
 	FullName    string    `gorm:"column:full_name; type:text"`
 	MsgCount    int       `gorm:"column:msg_count; type:int4"`
 	MemberLevel int       `gorm:"column:member_level; type:int2"`

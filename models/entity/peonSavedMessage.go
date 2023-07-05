@@ -5,6 +5,7 @@ import (
 )
 
 type PeonSavedMessage struct {
+	ID          uint           `gorm:"primarykey"`
 	ChatId      string         `gorm:"chat_id"`
 	MessageId   string         `gorm:"message_id"`
 	MessageJson datatypes.JSON `gorm:"message_json"`
