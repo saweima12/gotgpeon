@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/repositories"
 	"gotgpeon/pkg/services"
@@ -44,6 +45,7 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler 
 func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI) {
 	helper := utils.NewMessageHelper(message, bot)
 
+	logger.Debug(message)
 	if helper.IsSuperGroup() {
 		// Check if message is a command.
 		if helper.IsCommand() {

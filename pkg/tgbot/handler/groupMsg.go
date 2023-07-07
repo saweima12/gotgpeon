@@ -20,7 +20,8 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 
 	// TODO: Check message data.
 
-	err := h.recordService.SetUserRecord(chatId, ctx.Record)
+	// Add point.
+	err := h.recordService.AddUserPoint(chatId, ctx.Record)
 	if err != nil {
 		logger.Errorf("HandleGroupMessage Err: %s", err.Error())
 	}

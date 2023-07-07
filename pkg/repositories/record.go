@@ -50,12 +50,15 @@ func (repo *recordRepository) GetUserRecord(chatId string, query *models.Message
 		Where("user_id = ? AND chat_id = ?", query.UserId, chatId).
 		Limit(1).
 		Take(&entity).Error
-	if err != nil {
-		return nil, err
+
+	result = &models.MessageRecord{
+		UserId:      entity.UserId,
+		FullName:    entity.FullName,
+		MemberLevel: entity.MemberLevel,
+		Point:       entity.MsgCount,
+		CreatedTime: entity.CreatedTime,
 	}
-	result.MemberLevel = entity.MemberLevel
-	result.Point = entity.MsgCount
-	result.CreatedTime = entity.CreatedTime
+
 	return result, nil
 }
 
