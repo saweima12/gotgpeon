@@ -2,6 +2,7 @@ package handler
 
 import (
 	"gotgpeon/logger"
+	"gotgpeon/models"
 	"gotgpeon/utils"
 )
 
@@ -25,6 +26,6 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 	}
 }
 
-func (h *messageHandler) checkGroupMessage(helper *utils.MessageHelper) {
+func (h *messageHandler) checkGroupMessage(helper *utils.MessageHelper, ctx *models.MessageContext) {
 
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gotgpeon/models"
 	"gotgpeon/utils"
+	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -20,6 +21,7 @@ func (h *messageHandler) initGroupCommandMap() map[string]func(helper *utils.Mes
 func (h *messageHandler) handleGroupCommand(helper *utils.MessageHelper) {
 	cmdStr := helper.Command()
 	cmdFunc, ok := h.commandMap[cmdStr]
+
 	if ok {
 		cmdFunc(helper)
 	}
@@ -37,7 +39,6 @@ func (h *messageHandler) handleStartCommand(helper *utils.MessageHelper) {
 	chatCfg.Status = models.OK
 
 	h.peonService.SetChatConfig(chatCfg)
-
 	// TODO: Send tips message.
 	newMsg := tgbotapi.NewMessage(helper.ChatId(), "Weeed")
 	helper.BotAPI.Send(newMsg)
@@ -45,12 +46,22 @@ func (h *messageHandler) handleStartCommand(helper *utils.MessageHelper) {
 
 // handle /point command
 func (h *messageHandler) handlePointCommand(helper *utils.MessageHelper) {
-	fmt.Println("On point Command")
+	// Define parameter
+	chatIdStr := helper.ChatIdStr()
+	query := &models.MessageRecord{
+		UserId: helper.UserIdStr(),
+	}
+
+	userRecord := h.recordService.GetUserRecord(chatIdStr, query)
+	text := "Point: " + strconv.Itoa(userRecord.Point)
+	// Send tips
+	newMsg := tgbotapi.NewMessage(helper.ChatId(), text)
+	helper.BotAPI.Send(newMsg)
 }
 
 // handle /setlevel command
 func (h *messageHandler) handleSetLevelCommand(helper *utils.MessageHelper) {
-	fmt.Println("On Start Command")
+	fmt.Println("On SetLevel Command")
 }
 
 // handle /save command
