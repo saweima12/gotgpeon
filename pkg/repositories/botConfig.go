@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 	"gotgpeon/logger"
+	"gotgpeon/models"
 	"gotgpeon/models/entity"
 
 	"github.com/redis/go-redis/v9"
@@ -86,9 +87,9 @@ func (repo *botConfigRepository) SetWhiteListCache(whitelistSet map[string]byte)
 
 func (repo *botConfigRepository) SetWhiteListDBWithUserId(userId string, isEnable byte) error {
 
-	isOK := "ok"
+	isOK := models.OK
 	if isEnable != 1 {
-		isOK = "ng"
+		isOK = models.NG
 	}
 
 	value := entity.PeonUserWhitelist{
