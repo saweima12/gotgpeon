@@ -5,6 +5,7 @@ import (
 	"gotgpeon/models"
 	"gotgpeon/pkg/repositories"
 	"gotgpeon/pkg/services"
+	"gotgpeon/pkg/tgbot/command"
 	"gotgpeon/utils"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -17,9 +18,9 @@ type MessageHandler interface {
 }
 
 type messageHandler struct {
-	commandMap    map[string]func(helper *utils.MessageHelper)
 	peonService   services.PeonService
 	recordService services.RecordService
+	cmdMap        *command.CommandMap
 }
 
 func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler {
@@ -31,15 +32,21 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler 
 	// Initialize Services
 	peonService := services.NewPeonService(chatRepo, botRepo)
 	recordService := services.NewRecordService(recordRepo)
+	botService := services.NewBotService()
 
-	result := &messageHandler{
-		peonService:   peonService,
-		recordService: recordService,
+	cmdMap := &command.CommandMap{
+		PeonService:   peonService,
+		RecordService: recordService,
+		BotService:    botService,
 	}
+	cmdMap.Init()
 
 	// Initialize command map
-	result.commandMap = result.initGroupCommandMap()
-	return result
+	return &messageHandler{
+		peonService:   peonService,
+		recordService: recordService,
+		cmdMap:        cmdMap,
+	}
 }
 
 func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI) {
@@ -49,7 +56,7 @@ func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.
 	if helper.IsSuperGroup() {
 		// Check if message is a command.
 		if helper.IsCommand() {
-			h.handleGroupCommand(helper)
+			h.cmdMap.Invoke(helper)
 			return
 		}
 
