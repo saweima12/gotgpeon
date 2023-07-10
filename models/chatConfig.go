@@ -1,14 +1,20 @@
 package models
 
+type CheckerConfig struct {
+	Name      string      `json:"name"`
+	Parameter interface{} `json:"parameter"`
+}
+
 type ChatConfig struct {
-	Status           string   `json:"status"`
-	ChatId           string   `json:"chat_id"`
-	ChatName         string   `json:"chat_name"`
-	SeniorCount      int      `json:"senior_count"`
-	JuniorDay        int      `json:"junior_day"`
-	SeniorDay        int      `json:"senior_day"`
-	CheckLowestCount int      `json:"check_lowest_count"`
-	AdminStrators    []string `json:"admin_strators"`
+	Status           string          `json:"status"`
+	ChatId           string          `json:"chat_id"`
+	ChatName         string          `json:"chat_name"`
+	SeniorCount      int             `json:"senior_count"`
+	JuniorDay        int             `json:"junior_day"`
+	SeniorDay        int             `json:"senior_day"`
+	CheckLowestCount int             `json:"check_lowest_count"`
+	Adminstrators    []string        `json:"adminstrators"`
+	CheckerList      []CheckerConfig `json:"checker_config"`
 }
 
 func NewDefaultChatConfig(chatId string, chatName string, adminstrators []string) *ChatConfig {
@@ -20,7 +26,8 @@ func NewDefaultChatConfig(chatId string, chatName string, adminstrators []string
 		JuniorDay:        7,
 		SeniorDay:        60,
 		CheckLowestCount: 20,
-		AdminStrators:    adminstrators,
+		Adminstrators:    adminstrators,
+		CheckerList:      []CheckerConfig{},
 	}
 }
 

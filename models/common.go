@@ -7,8 +7,9 @@ const (
 )
 
 const (
-	JUNIOR = 1
-	SENIOR = 2
-	NONE   = 0
 	BLOCK  = -1
+	NONE   = 0
+	LIMIT  = 1
+	JUNIOR = 2
+	SENIOR = 3
 )

@@ -5,6 +5,7 @@ import (
 	"gotgpeon/models"
 	"gotgpeon/pkg/repositories"
 	"gotgpeon/pkg/services"
+	"gotgpeon/pkg/tgbot/checker"
 	"gotgpeon/pkg/tgbot/command"
 	"gotgpeon/utils"
 
@@ -20,7 +21,9 @@ type MessageHandler interface {
 type messageHandler struct {
 	peonService   services.PeonService
 	recordService services.RecordService
-	cmdMap        *command.CommandMap
+	botService    services.BotService
+	checker       checker.CheckerHandler
+	cmdMap        command.CommandHandler
 }
 
 func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler {
@@ -34,6 +37,7 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler 
 	recordService := services.NewRecordService(recordRepo)
 	botService := services.NewBotService()
 
+	// Initialize commandMap
 	cmdMap := &command.CommandMap{
 		PeonService:   peonService,
 		RecordService: recordService,
@@ -41,11 +45,17 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler 
 	}
 	cmdMap.Init()
 
+	// Initialize checker.
+	checker := &checker.MessageChecker{}
+	checker.Init()
+
 	// Initialize command map
 	return &messageHandler{
 		peonService:   peonService,
 		recordService: recordService,
+		botService:    botService,
 		cmdMap:        cmdMap,
+		checker:       checker,
 	}
 }
 

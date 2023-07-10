@@ -5,6 +5,10 @@ import (
 	"gotgpeon/utils"
 )
 
+type CommandHandler interface {
+	Invoke(helper *utils.MessageHelper)
+}
+
 type CommandMap struct {
 	PeonService   services.PeonService
 	RecordService services.RecordService

@@ -1,23 +1,32 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
-func main() {
-	cchan := make(chan int, 100)
-
-	for i := 0; i < 100; i++ {
-		cchan <- i
-	}
-
-	go processUpdate(cchan)
-	http.ListenAndServe(":8000", nil)
+type ItemDetail struct {
+	Data string `json:"data"`
 }
 
-func processUpdate(ch chan int) {
-	for update := range ch {
-		fmt.Println(update)
-	}
+type Item struct {
+	Name      string      `json:"name"`
+	Parameter interface{} `json:"parameter"`
+}
+
+func main() {
+	data := `{
+    "name": "1234",
+    "parameter": {
+      "data":"1234"
+    }
+  }`
+
+	cItem := Item{}
+	json.Unmarshal([]byte(data), &cItem)
+
+	fmt.Println(cItem)
+	detail := ItemDetail{}
+
+	fmt.Println(detail.Data)
 }

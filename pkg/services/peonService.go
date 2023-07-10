@@ -25,10 +25,7 @@ func NewPeonService(chatRepo repositories.ChatRepository, botRepo repositories.B
 }
 
 func (s peonService) GetChatConfig(chatId string, chatName string) *models.ChatConfig {
-	chatCfg, err := s.chatRepo.GetChatConfig(chatId)
-	if err != nil {
-		chatCfg = models.NewDefaultChatConfig(chatId, chatName, []string{})
-	}
+	chatCfg, _ := s.chatRepo.GetChatConfig(chatId)
 	return chatCfg
 }
 

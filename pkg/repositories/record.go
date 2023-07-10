@@ -46,8 +46,7 @@ func (repo *recordRepository) GetUserRecord(chatId string, query *models.Message
 	// Cache don't have user's record, try to find from database.
 	entity := entity.PeonBehaviorRecord{}
 	db := repo.GetDB()
-	err = db.Select("msg_count, member_level, created_time").
-		Where("user_id = ? AND chat_id = ?", query.UserId, chatId).
+	err = db.Where("user_id = ? AND chat_id = ?", query.UserId, chatId).
 		Limit(1).
 		Take(&entity).Error
 
@@ -59,6 +58,7 @@ func (repo *recordRepository) GetUserRecord(chatId string, query *models.Message
 		CreatedTime: entity.CreatedTime,
 	}
 
+	repo.SetUserRecordCache(chatId, result)
 	return result, nil
 }
 

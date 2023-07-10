@@ -2,6 +2,8 @@ package handler
 
 import (
 	"gotgpeon/logger"
+	"gotgpeon/models"
+	"gotgpeon/pkg/tgbot/checker"
 	"gotgpeon/utils"
 )
 
@@ -11,14 +13,23 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 	// Check chat is avaliable
 	chatCfg := h.peonService.GetChatConfig(chatId, helper.Chat.Title)
 
-	// if chatCfg.Status != models.OK && !isAllowUser {
+	// if chatCfg.Status != models.OK {
 	// 	return
 	// }
-
 	ctx := h.getMessageContext(helper, chatCfg)
 
-	// TODO: Check message data.
+	result := &checker.CheckResult{
+		MustDelete: false,
+		MustRecord: true,
+	}
+	// Check message is avaliable.
+	if ctx.Record.MemberLevel <= models.LIMIT {
+		result = h.checker.CheckMessage(helper, ctx)
+	}
 
+	if !result.MustRecord {
+		return
+	}
 	// Add point.
 	err := h.recordService.AddUserPoint(chatId, ctx.Record)
 	if err != nil {

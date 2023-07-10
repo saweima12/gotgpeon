@@ -64,6 +64,8 @@ func (repo *chatRepository) GetChatConfig(chatId string) (*models.ChatConfig, er
 		return nil, err
 	}
 
+	repo.SetConfigCache(chatId, result)
+
 	return nil, err
 }
 
