@@ -8,6 +8,6 @@ type MessageContext struct {
 	Record      *MessageRecord `json:"record"`
 }
 
-func (ctx *MessageContext) IsAdminstrator(userId string) bool {
-	return sliceutil.Contains(userId, ctx.ChatCfg.Adminstrators)
+func (ctx *MessageContext) IsAdminstrator() bool {
+	return sliceutil.Contains(ctx.Record.UserId, ctx.ChatCfg.Adminstrators)
 }

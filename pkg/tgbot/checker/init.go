@@ -1,7 +1,6 @@
 package checker
 
 import (
-	"fmt"
 	"gotgpeon/models"
 	"gotgpeon/utils"
 )
@@ -22,7 +21,7 @@ type MessageChecker struct {
 
 func (c *MessageChecker) Init() {
 	c.checkerMap = map[string]func(helper *utils.MessageHelper, ctx *models.MessageContext, parameter interface{}) bool{
-		"type": c.CheckType,
+		"type": c.CheckTypeOK,
 	}
 }
 
@@ -38,16 +37,12 @@ func (c *MessageChecker) CheckMessage(helper *utils.MessageHelper, ctx *models.M
 		Message:    "",
 	}
 
-	fmt.Println(ctx.ChatCfg)
-
 	// // Check message need to delete?
 	for _, cfg := range ctx.ChatCfg.CheckerList {
-		fmt.Println(cfg)
 		checkFunc, ok := c.checkerMap[cfg.Name]
 		if ok {
-			fmt.Println("ok")
-			mustDelete := checkFunc(helper, ctx, cfg.Parameter)
-			if mustDelete {
+			checkOK := checkFunc(helper, ctx, cfg.Parameter)
+			if !checkOK {
 				result.MustDelete = true
 				break
 			}

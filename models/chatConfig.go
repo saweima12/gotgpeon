@@ -2,7 +2,7 @@ package models
 
 type CheckerConfig struct {
 	Name      string      `json:"name"`
-	Parameter interface{} `json:"parameter"`
+	Parameter interface{} `json:"parameter,omitempty"`
 }
 
 type ChatConfig struct {
@@ -27,7 +27,10 @@ func NewDefaultChatConfig(chatId string, chatName string, adminstrators []string
 		SeniorDay:        60,
 		CheckLowestCount: 20,
 		Adminstrators:    adminstrators,
-		CheckerList:      []CheckerConfig{},
+		CheckerList: []CheckerConfig{
+			{Name: "type"},
+			{Name: "item"},
+		},
 	}
 }
 

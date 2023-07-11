@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"fmt"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/models/entity"
@@ -47,7 +46,6 @@ func (repo *botConfigRepository) GetWhiteList() map[string]byte {
 
 	// Read from database.
 	err = repo.GetDB().Table(tableName).Where("status = ?", "ok").Find(&rows).Error
-	fmt.Println(rows)
 	if err != nil {
 		logger.Error("Bot GetWhitelist Err:" + err.Error())
 		return result

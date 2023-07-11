@@ -23,7 +23,7 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 		MustRecord: true,
 	}
 	// Check message is avaliable.
-	if ctx.Record.MemberLevel <= models.LIMIT {
+	if ctx.Record.MemberLevel <= models.LIMIT && !ctx.IsAdminstrator() {
 		result = h.checker.CheckMessage(helper, ctx)
 	}
 

@@ -15,7 +15,6 @@ func GetConfig() *Configuration {
 
 // load configuration yaml file.
 func InitConfig(configPath string) error {
-
 	f, err := os.ReadFile(configPath)
 
 	if err != nil {
@@ -23,10 +22,10 @@ func InitConfig(configPath string) error {
 	}
 
 	err = yaml.Unmarshal(f, &config)
-	fmt.Println(config)
 	if err != nil {
 		return err
 	}
+	fmt.Println("Loading config finished")
 
 	return nil
 }

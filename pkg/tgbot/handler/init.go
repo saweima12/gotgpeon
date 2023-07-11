@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/repositories"
@@ -15,7 +16,7 @@ import (
 )
 
 type MessageHandler interface {
-	HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI)
+	HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI, isEdit bool)
 }
 
 type messageHandler struct {
@@ -59,9 +60,9 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler 
 	}
 }
 
-func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI) {
+func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI, isEdit bool) {
 	helper := utils.NewMessageHelper(message, bot)
-
+	fmt.Println(message)
 	logger.Debug(message)
 	if helper.IsSuperGroup() {
 		// Check if message is a command.

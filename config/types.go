@@ -6,13 +6,15 @@ type Configuration struct {
 }
 
 type CommonConfig struct {
-	Mode       string `yaml:"mode"`
-	ListenPort string `yaml:"listen_port"`
-	RedisUri   string `yaml:"redis_uri"`
-	DBUri      string `yaml:"db_uri"`
+	Mode        string   `yaml:"mode"`
+	ListenPort  string   `yaml:"listen_port"`
+	RedisUri    string   `yaml:"redis_uri"`
+	DBUri       string   `yaml:"db_uri"`
+	AllowViaIds []string `yaml:"allow_ids"`
 }
 
 type TgBotConfig struct {
+	UpdateMode     string `yaml:"update_mode"`
 	AutoSetWebhook bool   `yaml:"auto_set_webhook"`
 	BotToken       string `yaml:"bot_token"`
 	HookURL        string `yaml:"hook_url"`

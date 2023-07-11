@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"gotgpeon/config"
 	"gotgpeon/db"
 	"gotgpeon/logger"
+	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot"
 	"net/http"
 )
@@ -42,9 +44,16 @@ func main() {
 		panic("Initialize telegram bot err:" + err.Error())
 	}
 
+	var client *models.TgbotUpdateProcess
 	// Add Webhook route and launche update process.
-	client := tgbot.StartLongPollProcess(botClient)
-	// client := tgbot.StartWebhookProcess(cfg.TgBot.BotToken, botClient)
+	if cfg.Common.Mode == "webhook" {
+		client = tgbot.StartWebhookProcess(cfg.TgBot.BotToken, botClient)
+		fmt.Println("UpdateMode: Webhook")
+	} else {
+		client = tgbot.StartLongPollProcess(botClient)
+		fmt.Println("UpdateMode: LongPoll")
+	}
+
 	// When shutdown timing, close the UpdateProcess
 	defer client.Stop()
 	logger.Info("Initialize finished.")

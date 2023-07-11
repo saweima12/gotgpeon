@@ -22,6 +22,10 @@ func (h *MessageHelper) IsSuperGroup() bool {
 	return h.Chat.IsSuperGroup()
 }
 
+func (h *MessageHelper) IsForward() bool {
+	return h.ForwardDate != 0
+}
+
 func (h *MessageHelper) FullName() string {
 	return h.From.FirstName + " " + h.From.LastName
 }

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"gotgpeon/config"
 	"gotgpeon/db/cachedb"
 	"gotgpeon/db/sqldb"
@@ -22,6 +23,11 @@ func InitDbConn(cfg *config.CommonConfig) error {
 		logger.Errorf("Redis connection err: %s, uri: %s", err.Error(), cfg.RedisUri)
 	}
 	cache = redisConn
+	err = cache.Ping(context.Background()).Err()
+	if err != nil {
+		logger.Errorf("Redis connection err: %s, uri: %s", err.Error(), cfg.RedisUri)
+		return err
+	}
 
 	// Set database connection
 	dbConn, err := sqldb.InitPostgresDb(cfg.DBUri, cfg.Mode)
