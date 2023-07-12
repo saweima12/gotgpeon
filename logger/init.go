@@ -7,11 +7,22 @@ import (
 var instance *zap.SugaredLogger
 
 // Initialize logger instance.
-func InitLogger() error {
-	logger, err := zap.NewProduction(
-		zap.AddCaller(),
-		zap.AddCallerSkip(1),
-	)
+func InitLogger(mode string) error {
+	var logger *zap.Logger
+	var err error
+
+	if mode == "dev" {
+		logger, err = zap.NewDevelopment(
+			zap.AddCaller(),
+			zap.AddCallerSkip(1),
+		)
+	} else {
+
+		logger, err = zap.NewProduction(
+			zap.AddCaller(),
+			zap.AddCallerSkip(1),
+		)
+	}
 
 	if err != nil {
 		return err

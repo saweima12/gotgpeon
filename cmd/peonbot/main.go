@@ -8,6 +8,7 @@ import (
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot"
+	"gotgpeon/utils/goccutil"
 	"net/http"
 )
 
@@ -27,7 +28,7 @@ func main() {
 
 	cfg := config.GetConfig()
 	// Initialize Logger
-	err = logger.InitLogger()
+	err = logger.InitLogger(cfg.Common.Mode)
 	if err != nil {
 		panic("Initialize Logger err:" + err.Error())
 	}
@@ -56,6 +57,9 @@ func main() {
 
 	// When shutdown timing, close the UpdateProcess
 	defer client.Stop()
+	// Initialize opencc
+	goccutil.InitOpenCC()
+
 	logger.Info("Initialize finished.")
 
 	// Start a http server for listen update

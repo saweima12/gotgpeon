@@ -24,7 +24,7 @@ func main() {
 
 	// Initialize Logger
 	cfg := config.GetConfig()
-	err = logger.InitLogger()
+	err = logger.InitLogger(cfg.Common.Mode)
 	if err != nil {
 		panic("Initialize Logger err:" + err.Error())
 	}

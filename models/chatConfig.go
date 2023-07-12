@@ -29,7 +29,8 @@ func NewDefaultChatConfig(chatId string, chatName string, adminstrators []string
 		Adminstrators:    adminstrators,
 		CheckerList: []CheckerConfig{
 			{Name: "type"},
-			{Name: "item"},
+			{Name: "entities"},
+			{Name: "viabot"},
 		},
 	}
 }

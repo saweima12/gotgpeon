@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fmt"
+	"gotgpeon/config"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/repositories"
@@ -9,6 +9,7 @@ import (
 	"gotgpeon/pkg/tgbot/checker"
 	"gotgpeon/pkg/tgbot/command"
 	"gotgpeon/utils"
+	"gotgpeon/utils/jsonutil"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/redis/go-redis/v9"
@@ -62,8 +63,11 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler 
 
 func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI, isEdit bool) {
 	helper := utils.NewMessageHelper(message, bot)
-	fmt.Println(message)
-	logger.Debug(message)
+
+	// HandleMessage.
+	bytes, _ := jsonutil.Marshal(message)
+	logger.Debug(string(bytes[:]))
+
 	if helper.IsSuperGroup() {
 		// Check if message is a command.
 		if helper.IsCommand() {
@@ -91,8 +95,12 @@ func (h *messageHandler) getMessageContext(helper *utils.MessageHelper, chatCfg 
 	}
 	userRecord := h.recordService.GetUserRecord(chatId, recordQuery)
 
+	// ServiceConfig.
+	commonCfg := config.GetConfig().Common
+
 	return &models.MessageContext{
 		ChatCfg:     chatCfg,
+		CommonCfg:   &commonCfg,
 		IsWhitelist: isAllowlist,
 		Record:      userRecord,
 	}

@@ -21,12 +21,10 @@ type MessageChecker struct {
 
 func (c *MessageChecker) Init() {
 	c.checkerMap = map[string]func(helper *utils.MessageHelper, ctx *models.MessageContext, parameter interface{}) bool{
-		"type": c.CheckTypeOK,
+		"type":     c.CheckTypeOK,
+		"entities": c.CheckEntitiesOK,
+		"viabot":   c.CheckViabotOK,
 	}
-}
-
-func (c *MessageChecker) Test(helper *utils.MessageHelper, ctx *models.MessageContext, parameter any) bool {
-	return false
 }
 
 func (c *MessageChecker) CheckMessage(helper *utils.MessageHelper, ctx *models.MessageContext) *CheckResult {
@@ -37,10 +35,9 @@ func (c *MessageChecker) CheckMessage(helper *utils.MessageHelper, ctx *models.M
 		Message:    "",
 	}
 
-	// // Check message need to delete?
+	// Check message need to delete?
 	for _, cfg := range ctx.ChatCfg.CheckerList {
-		checkFunc, ok := c.checkerMap[cfg.Name]
-		if ok {
+		if checkFunc, ok := c.checkerMap[cfg.Name]; ok {
 			checkOK := checkFunc(helper, ctx, cfg.Parameter)
 			if !checkOK {
 				result.MustDelete = true
