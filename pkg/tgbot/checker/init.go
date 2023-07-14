@@ -10,46 +10,55 @@ type CheckerHandler interface {
 }
 
 type CheckResult struct {
-	MustDelete bool
-	MustRecord bool
+	MarkDelete bool
+	MarkRecord bool
 	Message    string
 }
 
 type MessageChecker struct {
-	checkerMap map[string]func(helper *utils.MessageHelper, ctx *models.MessageContext, parameter interface{}) bool
+	checkerMap map[string]func(
+		helper *utils.MessageHelper,
+		ctx *models.MessageContext,
+		result *CheckResult,
+		parameter interface{},
+	) bool
 }
 
 func (c *MessageChecker) Init() {
-	c.checkerMap = map[string]func(helper *utils.MessageHelper, ctx *models.MessageContext, parameter interface{}) bool{
+	c.checkerMap = map[string]func(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter interface{}) bool{
 		"type":     c.CheckTypeOK,
 		"entities": c.CheckEntitiesOK,
 		"viabot":   c.CheckViabotOK,
+		"username": c.CheckNameOK,
+		"content":  c.CheckContentOK,
 	}
 }
 
 func (c *MessageChecker) CheckMessage(helper *utils.MessageHelper, ctx *models.MessageContext) *CheckResult {
-
-	result := CheckResult{
-		MustDelete: false,
-		MustRecord: true,
+	result := &CheckResult{
+		MarkDelete: false,
+		MarkRecord: true,
 		Message:    "",
+	}
+
+	if ctx.IsAdminstrator() || ctx.Record.MemberLevel >= models.JUNIOR {
+		return result
 	}
 
 	// Check message need to delete?
 	for _, cfg := range ctx.ChatCfg.CheckerList {
 		if checkFunc, ok := c.checkerMap[cfg.Name]; ok {
-			checkOK := checkFunc(helper, ctx, cfg.Parameter)
-			if !checkOK {
-				result.MustDelete = true
+			isNext := checkFunc(helper, ctx, result, cfg.Parameter)
+			if !isNext {
 				break
 			}
 		}
 	}
 
 	// Check message need to record?
-	if result.MustDelete {
-		result.MustRecord = false
+	if result.MarkDelete {
+		result.MarkRecord = false
 	}
 
-	return &result
+	return result
 }

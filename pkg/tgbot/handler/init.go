@@ -65,8 +65,8 @@ func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.
 	helper := utils.NewMessageHelper(message, bot)
 
 	// HandleMessage.
-	bytes, _ := jsonutil.Marshal(message)
-	logger.Debug(string(bytes[:]))
+	data, _ := jsonutil.MarshalToString(message)
+	logger.Debug(data)
 
 	if helper.IsSuperGroup() {
 		// Check if message is a command.

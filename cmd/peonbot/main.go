@@ -13,10 +13,12 @@ import (
 )
 
 var configPath string
+var langPath string
 
 func main() {
 	// Get configPath parameter.
 	inputConfigPath := flag.String("configPath", "config.yml", "configuration file path.")
+	inputLangPath := flag.String("langPath", "lang.yml", "language file path.")
 	flag.Parse()
 
 	// loading configuration
@@ -24,6 +26,13 @@ func main() {
 	err := config.InitConfig(configPath)
 	if err != nil {
 		panic("Loading config error path:" + configPath)
+	}
+
+	// loading language file.
+	langPath = *inputLangPath
+	err = config.InitTextlang(langPath)
+	if err != nil {
+		panic("Loading language file error, path: " + langPath + " err:" + err.Error())
 	}
 
 	cfg := config.GetConfig()

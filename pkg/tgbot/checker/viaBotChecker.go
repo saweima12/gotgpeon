@@ -5,16 +5,17 @@ import (
 	"gotgpeon/models"
 	"gotgpeon/utils"
 	"gotgpeon/utils/sliceutil"
-	"strconv"
 )
 
-func (c *MessageChecker) CheckViabotOK(helper *utils.MessageHelper, ctx *models.MessageContext, parameter any) bool {
+func (c *MessageChecker) CheckViabotOK(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
 	if helper.ViaBot != nil {
-		botId := strconv.Itoa(int(helper.ViaBot.ID))
-		allowViaList := config.GetConfig().Common.AllowViaIds
-		if sliceutil.Contains(botId, allowViaList) {
-			return true
+		botUsername := helper.ViaBot.UserName
+		allowViaList := config.GetConfig().Common.AllowViaBots
+		if sliceutil.Contains(botUsername, allowViaList) {
+
 		}
+
+		result.MarkDelete = true
 		return false
 	}
 	return true

@@ -50,6 +50,10 @@ func (repo *recordRepository) GetUserRecord(chatId string, query *models.Message
 		Limit(1).
 		Take(&entity).Error
 
+	if err != nil {
+		return nil, err
+	}
+
 	result = &models.MessageRecord{
 		UserId:      entity.UserId,
 		FullName:    entity.FullName,
@@ -60,6 +64,7 @@ func (repo *recordRepository) GetUserRecord(chatId string, query *models.Message
 
 	repo.SetUserRecordCache(chatId, result)
 	return result, nil
+
 }
 
 func (repo *recordRepository) SetUserRecordCache(chatId string, record *models.MessageRecord) error {

@@ -31,6 +31,8 @@ func NewDefaultChatConfig(chatId string, chatName string, adminstrators []string
 			{Name: "type"},
 			{Name: "entities"},
 			{Name: "viabot"},
+			{Name: "username"},
+			{Name: "content"},
 		},
 	}
 }

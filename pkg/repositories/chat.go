@@ -15,7 +15,7 @@ import (
 type ChatRepository interface {
 	GetChatConfig(chatId string) (*models.ChatConfig, error)
 	SetConfigCache(chatId string, value *models.ChatConfig) error
-	SetConfigDb(chatId string, value *models.ChatConfig)
+	SetConfigDb(chatId string, value *models.ChatConfig) error
 	GetViolation(chatId string, userId string) (num int, err error)
 	SetViolation(chatId string, userId string) (bool, error)
 }
@@ -85,12 +85,12 @@ func (repo *chatRepository) SetConfigCache(chatId string, value *models.ChatConf
 	return nil
 }
 
-func (repo *chatRepository) SetConfigDb(chatId string, value *models.ChatConfig) {
+func (repo *chatRepository) SetConfigDb(chatId string, value *models.ChatConfig) error {
 
 	bytes, err := json.Marshal(value)
 	if err != nil {
 		logger.Errorf("SetConfigDb Marshal error: %s", err.Error())
-		return
+		return err
 	}
 
 	entityCfg := entity.PeonChatConfig{
@@ -107,8 +107,10 @@ func (repo *chatRepository) SetConfigDb(chatId string, value *models.ChatConfig)
 
 	if err != nil {
 		logger.Errorf("SetConfigDb error: %s", err.Error())
-		return
+		return err
 	}
+
+	return nil
 }
 
 func (repo *chatRepository) GetViolation(chatId string, userId string) (num int, err error) {

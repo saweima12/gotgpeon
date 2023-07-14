@@ -2,8 +2,6 @@ package handler
 
 import (
 	"gotgpeon/logger"
-	"gotgpeon/models"
-	"gotgpeon/pkg/tgbot/checker"
 	"gotgpeon/utils"
 )
 
@@ -17,16 +15,9 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 	// 	return
 	// }
 	ctx := h.getMessageContext(helper, chatCfg)
-	result := &checker.CheckResult{
-		MustDelete: false,
-		MustRecord: true,
-	}
-	// Check message is avaliable.
-	if ctx.Record.MemberLevel <= models.LIMIT && !ctx.IsAdminstrator() {
-		result = h.checker.CheckMessage(helper, ctx)
-	}
+	result := h.checker.CheckMessage(helper, ctx)
 
-	if !result.MustRecord {
+	if !result.MarkRecord {
 		return
 	}
 	// Add point.

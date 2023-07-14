@@ -1,13 +1,14 @@
 package services
 
 import (
+	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/repositories"
 )
 
 type PeonService interface {
 	GetChatConfig(chatId string, chatName string) *models.ChatConfig
-	SetChatConfig(cfg *models.ChatConfig)
+	SetChatConfig(cfg *models.ChatConfig) error
 	GetBotAllowlist() map[string]byte
 	IsAllowListUser(userId string) bool
 }
@@ -25,16 +26,32 @@ func NewPeonService(chatRepo repositories.ChatRepository, botRepo repositories.B
 }
 
 func (s peonService) GetChatConfig(chatId string, chatName string) *models.ChatConfig {
-	chatCfg, _ := s.chatRepo.GetChatConfig(chatId)
+	chatCfg, err := s.chatRepo.GetChatConfig(chatId)
+
+	if err != nil {
+		return models.NewDefaultChatConfig(chatId, chatName, []string{})
+	}
+
 	return chatCfg
 }
 
-func (s peonService) SetChatConfig(newCfg *models.ChatConfig) {
+func (s peonService) SetChatConfig(newCfg *models.ChatConfig) error {
 	chatId := newCfg.ChatId
 	// Save to database.
-	s.chatRepo.SetConfigDb(chatId, newCfg)
+	err := s.chatRepo.SetConfigDb(chatId, newCfg)
+
+	if err != nil {
+		logger.Errorf("SetChatConfigDb err: %s", err.Error())
+		return err
+	}
+
 	// Save to cache.
 	s.chatRepo.SetConfigCache(chatId, newCfg)
+	if err != nil {
+		logger.Errorf("SetChatConfigCache err: %s", err.Error())
+	}
+
+	return nil
 }
 
 func (s *peonService) GetBotAllowlist() map[string]byte {

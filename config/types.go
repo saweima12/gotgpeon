@@ -1,16 +1,17 @@
 package config
 
 type Configuration struct {
-	Common CommonConfig `yaml:"common"`
-	TgBot  TgBotConfig  `yaml:"tgbot"`
+	Common     CommonConfig `yaml:"common"`
+	TgBot      TgBotConfig  `yaml:"tgbot"`
+	IgnoreWord []string     `yaml:"ignore_word"`
 }
 
 type CommonConfig struct {
-	Mode        string   `yaml:"mode"`
-	ListenPort  string   `yaml:"listen_port"`
-	RedisUri    string   `yaml:"redis_uri"`
-	DBUri       string   `yaml:"db_uri"`
-	AllowViaIds []string `yaml:"allow_ids"`
+	Mode         string   `yaml:"mode"`
+	ListenPort   string   `yaml:"listen_port"`
+	RedisUri     string   `yaml:"redis_uri"`
+	DBUri        string   `yaml:"db_uri"`
+	AllowViaBots []string `yaml:"allow_viabots"`
 }
 
 type TgBotConfig struct {
@@ -18,4 +19,8 @@ type TgBotConfig struct {
 	AutoSetWebhook bool   `yaml:"auto_set_webhook"`
 	BotToken       string `yaml:"bot_token"`
 	HookURL        string `yaml:"hook_url"`
+}
+
+type TextLang struct {
+	TipsStartCmd string `yaml:"tips_start_cmd"`
 }

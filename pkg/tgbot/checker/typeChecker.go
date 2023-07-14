@@ -5,36 +5,38 @@ import (
 	"gotgpeon/models"
 	"gotgpeon/utils"
 	"gotgpeon/utils/sliceutil"
-	"strconv"
 )
 
-func (c *MessageChecker) CheckTypeOK(helper *utils.MessageHelper, ctx *models.MessageContext, parameter any) bool {
+// Check the message for any issues and return whether to continue the inspection.
+func (c *MessageChecker) CheckTypeOK(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
 	// check isforward ?
 	if helper.IsForward() {
+		result.MarkDelete = true
 		return false
 	}
 
 	// check message type
 	if ctx.Record.MemberLevel >= models.LIMIT {
 		if c.checkLimitUserOK(helper, ctx) {
-			return true
+			result.MarkDelete = false
+			return false
 		}
 	}
 
-	// Check type is text.
-	if helper.Text != "" {
-		return true
+	// Check type is not text.
+	if helper.Text == "" {
+		result.MarkDelete = true
+		return false
 	}
 
-	return false
+	return true
 }
 
 func (c *MessageChecker) checkLimitUserOK(helper *utils.MessageHelper, ctx *models.MessageContext) bool {
 	if helper.Sticker != nil || helper.Photo != nil || helper.Animation != nil || helper.Video != nil {
 		if helper.ViaBot != nil {
-			allowViaList := config.GetConfig().Common.AllowViaIds
-			viaBotIdStr := strconv.Itoa(int(helper.ViaBot.ID))
-			return sliceutil.Contains(viaBotIdStr, allowViaList)
+			allowViaList := config.GetConfig().Common.AllowViaBots
+			return sliceutil.Contains(helper.ViaBot.UserName, allowViaList)
 		}
 		return false
 	}
