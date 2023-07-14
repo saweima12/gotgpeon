@@ -29,6 +29,7 @@ func (h *CommandMap) Init() {
 	h.commandMap = map[string]func(helper *utils.MessageHelper){
 		"start": h.handleStartCommand,
 		"point": h.handlePointCommand,
+		"del":   h.handleDelCommand,
 		// "setlevel": h.handleSetLevelCommand,
 		// "save":     h.handleSaveCommand,
 	}

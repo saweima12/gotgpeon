@@ -28,7 +28,7 @@ type messageHandler struct {
 	cmdMap        command.CommandHandler
 }
 
-func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler {
+func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client, botAPI *tgbotapi.BotAPI) MessageHandler {
 	// Initialize Repositories
 	chatRepo := repositories.NewChatRepo(dbConn, cacheConn)
 	botRepo := repositories.NewBotConfigRepo(dbConn, cacheConn)
@@ -37,7 +37,7 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client) MessageHandler 
 	// Initialize Services
 	peonService := services.NewPeonService(chatRepo, botRepo)
 	recordService := services.NewRecordService(recordRepo)
-	botService := services.NewBotService()
+	botService := services.NewBotService(botAPI)
 
 	// Initialize commandMap
 	cmdMap := &command.CommandMap{

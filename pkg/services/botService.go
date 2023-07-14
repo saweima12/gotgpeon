@@ -1,22 +1,28 @@
 package services
 
 import (
+	"fmt"
 	"gotgpeon/logger"
 	"gotgpeon/models"
+	"gotgpeon/pkg/tgbot/boterr"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type BotService interface {
+	SendMessage(message tgbotapi.Chattable, duration time.Duration)
+	DeleteMessage(chatId int64, messageId int)
 }
 
 type botService struct {
 	BotAPI *tgbotapi.BotAPI
 }
 
-func NewBotService() BotService {
-	return &botService{}
+func NewBotService(botAPI *tgbotapi.BotAPI) BotService {
+	return &botService{
+		BotAPI: botAPI,
+	}
 }
 
 func (s *botService) SendMessage(message tgbotapi.Chattable, duration time.Duration) {
@@ -25,6 +31,16 @@ func (s *botService) SendMessage(message tgbotapi.Chattable, duration time.Durat
 	if duration > 0 {
 		// TODO: Delay delete message.
 	}
+}
+
+func (s *botService) DeleteMessage(chatId int64, messageId int) {
+	deleteReq := tgbotapi.NewDeleteMessage(chatId, messageId)
+	_, err := s.BotAPI.Request(deleteReq)
+
+	if err != nil {
+		fmt.Println(boterr.IsNotFound(err))
+	}
+
 }
 
 func (s *botService) SetPermission(chatId int64, userId int64, level int, until_date int64) {

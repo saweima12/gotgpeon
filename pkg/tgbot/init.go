@@ -91,7 +91,7 @@ func runUpdateProcess(c *models.TgbotUpdateProcess, botAPI *tgbotapi.BotAPI) {
 	dbConn := db.GetDB()
 	cacheConn := db.GetCache()
 	// Create handler.
-	msgHandler := handler.NewMessageHandler(dbConn, cacheConn)
+	msgHandler := handler.NewMessageHandler(dbConn, cacheConn, botAPI)
 
 	for {
 		select {

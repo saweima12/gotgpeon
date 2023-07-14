@@ -17,6 +17,10 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 	ctx := h.getMessageContext(helper, chatCfg)
 	result := h.checker.CheckMessage(helper, ctx)
 
+	if result.MarkDelete {
+
+	}
+
 	if !result.MarkRecord {
 		return
 	}
