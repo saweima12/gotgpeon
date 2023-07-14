@@ -17,11 +17,11 @@ func InitLogger(mode string) error {
 			zap.AddCallerSkip(1),
 		)
 	} else {
-
 		logger, err = zap.NewProduction(
 			zap.AddCaller(),
 			zap.AddCallerSkip(1),
 		)
+
 	}
 
 	if err != nil {
