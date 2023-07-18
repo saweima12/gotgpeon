@@ -18,7 +18,7 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 	result := h.checker.CheckMessage(helper, ctx)
 
 	if result.MarkDelete {
-
+		h.botService.DeleteMessage(helper.ChatId(), helper.MessageID)
 	}
 
 	if !result.MarkRecord {

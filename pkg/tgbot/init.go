@@ -6,6 +6,7 @@ import (
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot/handler"
 	"gotgpeon/utils"
+	"gotgpeon/utils/poolutil"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -76,13 +77,14 @@ func SetWebhook(hookURL string, bot *tgbotapi.BotAPI) error {
 	return nil
 }
 
-func ProcessUpdate(msgHandler handler.MessageHandler, update tgbotapi.Update, botAPI *tgbotapi.BotAPI) {
-
-	if update.Message != nil {
-		msgHandler.HandleMessage(update.Message, botAPI, false)
-	}
-	if update.EditedMessage != nil {
-		msgHandler.HandleMessage(update.EditedMessage, botAPI, true)
+func ProcessUpdate(msgHandler handler.MessageHandler, update tgbotapi.Update, botAPI *tgbotapi.BotAPI) func() {
+	return func() {
+		if update.Message != nil {
+			msgHandler.HandleMessage(update.Message, botAPI, false)
+		}
+		if update.EditedMessage != nil {
+			msgHandler.HandleMessage(update.EditedMessage, botAPI, true)
+		}
 	}
 }
 
@@ -99,7 +101,7 @@ func runUpdateProcess(c *models.TgbotUpdateProcess, botAPI *tgbotapi.BotAPI) {
 			return
 		case update := <-c.UpdateChan:
 			{
-				ProcessUpdate(msgHandler, update, botAPI)
+				poolutil.Submit(ProcessUpdate(msgHandler, update, botAPI))
 			}
 		default:
 		}

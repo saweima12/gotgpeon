@@ -9,6 +9,7 @@ import (
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot"
 	"gotgpeon/utils/goccutil"
+	"gotgpeon/utils/poolutil"
 	"net/http"
 )
 
@@ -40,6 +41,12 @@ func main() {
 	err = logger.InitLogger(cfg.Common.Mode)
 	if err != nil {
 		panic("Initialize Logger err:" + err.Error())
+	}
+
+	// Initialize ants pool.
+	err = poolutil.Init()
+	if err != nil {
+		panic("Initialize goroutine pool err" + err.Error())
 	}
 
 	// Initialize database and redis connection.

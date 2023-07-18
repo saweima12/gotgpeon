@@ -2,23 +2,23 @@ package main
 
 import (
 	"fmt"
-	"regexp"
-	"strings"
 
-	"github.com/liuzl/gocc"
+	"github.com/panjf2000/ants/v2"
 )
 
-var ChPtn = regexp.MustCompile("[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]")
-
 func main() {
-	s2t, err := gocc.New("s2t")
+	pool, err := ants.NewPool(10000)
+
 	if err != nil {
-		fmt.Print(err)
+		fmt.Println(err.Error())
 	}
 
-	chSlice := ChPtn.FindAllString("台湾是个好地方，就是交通很乱，人们都是怪物。", -1)
-	chStr := strings.Join(chSlice, "")
+	for i := 0; i < 10000; i++ {
+		_ = pool.Submit(func() {
+			fmt.Println(i)
+		})
+	}
 
-	newStr, err := s2t.Convert(chStr)
-	fmt.Println(newStr)
+	fmt.Println(ants.Running())
+
 }

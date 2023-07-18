@@ -21,7 +21,6 @@ func InitLogger(mode string) error {
 			zap.AddCaller(),
 			zap.AddCallerSkip(1),
 		)
-
 	}
 
 	if err != nil {

@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot/boterr"
@@ -26,10 +25,11 @@ func NewBotService(botAPI *tgbotapi.BotAPI) BotService {
 }
 
 func (s *botService) SendMessage(message tgbotapi.Chattable, duration time.Duration) {
-	s.BotAPI.Send(message)
+	reusltMsg, err := s.BotAPI.Send(message)
 
 	if duration > 0 {
 		// TODO: Delay delete message.
+
 	}
 }
 
@@ -38,9 +38,10 @@ func (s *botService) DeleteMessage(chatId int64, messageId int) {
 	_, err := s.BotAPI.Request(deleteReq)
 
 	if err != nil {
-		fmt.Println(boterr.IsNotFound(err))
+		if boterr.IsNotFound(err) {
+			return
+		}
 	}
-
 }
 
 func (s *botService) SetPermission(chatId int64, userId int64, level int, until_date int64) {
