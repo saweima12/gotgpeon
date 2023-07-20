@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot/boterr"
@@ -25,11 +26,16 @@ func NewBotService(botAPI *tgbotapi.BotAPI) BotService {
 }
 
 func (s *botService) SendMessage(message tgbotapi.Chattable, duration time.Duration) {
-	reusltMsg, err := s.BotAPI.Send(message)
+	resultMsg, err := s.BotAPI.Send(message)
+
+	if err != nil {
+		logger.Errorf("Send message err: %v", err)
+		return
+	}
 
 	if duration > 0 {
 		// TODO: Delay delete message.
-
+		fmt.Println(resultMsg)
 	}
 }
 
@@ -58,6 +64,7 @@ func (s *botService) SetPermission(chatId int64, userId int64, level int, until_
 	}
 
 	// TODO: Send setPermission tips.
+
 }
 
 func getPermissionByLevel(level int) *tgbotapi.ChatPermissions {
