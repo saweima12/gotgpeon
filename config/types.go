@@ -22,5 +22,8 @@ type TgBotConfig struct {
 }
 
 type TextLang struct {
-	TipsStartCmd string `yaml:"tips_start_cmd"`
+	TipsStartCmd         string `yaml:"tips_start_cmd"`
+	TipsSetPermissionCmd string `yaml:"tips_setpermission_cmd"`
+	TipsContentNozhtw    string `yaml:"tips_no_zhtw"`
+	TipsNameBlock        string `yaml:"tips_name_block"`
 }

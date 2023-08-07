@@ -11,12 +11,9 @@ func (c *MessageChecker) CheckViabotOK(helper *utils.MessageHelper, ctx *models.
 	if helper.ViaBot != nil {
 		botUsername := helper.ViaBot.UserName
 		allowViaList := config.GetConfig().Common.AllowViaBots
-		if sliceutil.Contains(botUsername, allowViaList) {
-
+		if !sliceutil.Contains(botUsername, allowViaList) {
+			result.MarkDelete = true
 		}
-
-		result.MarkDelete = true
-		return false
 	}
 	return true
 }

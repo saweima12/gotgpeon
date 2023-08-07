@@ -17,12 +17,14 @@ func (c *MessageChecker) CheckContentOK(helper *utils.MessageHelper, ctx *models
 		// check middle east language.
 		if MePtn.MatchString(helper.Text) {
 			result.MarkDelete = true
+			result.Message = config.GetTextLang().TipsContentNozhtw
 			return false
 		}
 
 		// check spchinese
 		if !checkSpChineseOK(helper.Text, 2) {
 			result.MarkDelete = true
+			result.Message = config.GetTextLang().TipsContentNozhtw
 			return false
 		}
 	}
@@ -35,11 +37,13 @@ func (c *MessageChecker) CheckNameOK(helper *utils.MessageHelper, ctx *models.Me
 	// check middle east language.
 	if MePtn.MatchString(helper.FullName()) {
 		result.MarkDelete = true
+		result.Message = config.GetTextLang().TipsNameBlock
 		return false
 	}
 
 	if !checkSpChineseOK(helper.FullName(), 1) {
 		result.MarkDelete = true
+		result.Message = config.GetTextLang().TipsNameBlock
 		return false
 	}
 

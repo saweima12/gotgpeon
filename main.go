@@ -13,6 +13,7 @@ type Delayable interface {
 }
 
 type DelayTask struct {
+	P string
 }
 
 func (t *DelayTask) Run() {
@@ -25,7 +26,7 @@ var wg *sync.WaitGroup
 func Init() *timewheel.TimeWheel[Delayable] {
 	var err error
 
-	wheel, err = timewheel.New[Delayable](time.Second, 60)
+	wheel, err = timewheel.New[Delayable](time.Second-1, 60)
 	if err != nil {
 		fmt.Println("Timewheel initialize err: %s", err.Error())
 	}
@@ -39,18 +40,17 @@ func main() {
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
-	nTask := &timewheel.Task[Delayable]{
+	nTask := timewheel.Task[Delayable]{
 		Data: &DelayTask{},
 		TimeoutCallback: func(task timewheel.Task[Delayable]) {
-
 			task.Data.Run()
 			wg.Done()
 		},
 	}
 	wheel.Start()
 
-	id, err := wheel.AddTask(time.Second*5, *nTask)
-
+	id, err := wheel.AddTask(time.Second*1, nTask)
+	fmt.Println(id, err)
 	wg.Wait()
 	fmt.Println(id, err)
 }

@@ -28,6 +28,7 @@ func InitTgBot(cfg *config.TgBotConfig) (*tgbotapi.BotAPI, error) {
 	return bot, err
 }
 
+// Start to revice and handle message from webhook
 func StartWebhookProcess(botToken string, botAPI *tgbotapi.BotAPI) *models.TgbotUpdateProcess {
 	// Get update channel.
 	ch := botAPI.ListenForWebhook("/" + botToken)
@@ -43,6 +44,7 @@ func StartWebhookProcess(botToken string, botAPI *tgbotapi.BotAPI) *models.Tgbot
 	return &process
 }
 
+// Start to revice and handle message from longpoll
 func StartLongPollProcess(botAPI *tgbotapi.BotAPI) *models.TgbotUpdateProcess {
 
 	upCfg := tgbotapi.NewUpdate(0)
@@ -89,7 +91,6 @@ func ProcessUpdate(msgHandler handler.MessageHandler, update tgbotapi.Update, bo
 }
 
 func runUpdateProcess(c *models.TgbotUpdateProcess, botAPI *tgbotapi.BotAPI) {
-
 	dbConn := db.GetDB()
 	cacheConn := db.GetCache()
 	// Create handler.

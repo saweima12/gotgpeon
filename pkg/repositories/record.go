@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"encoding/json"
+	"errors"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/models/entity"
@@ -43,14 +44,14 @@ func (repo *recordRepository) GetUserRecord(chatId string, query *models.Message
 		}
 		return result, nil
 	}
-	// Cache don't have user's record, try to find from database.
+	// Cache didn't have user record, try to find from database.
 	entity := entity.PeonBehaviorRecord{}
 	db := repo.GetDB()
-	err = db.Where("user_id = ? AND chat_id = ?", query.UserId, chatId).
-		Limit(1).
-		Take(&entity).Error
 
-	if err != nil {
+	err = db.Where("user_id = ? AND chat_id = ?", query.UserId, chatId).
+		Take(&entity).Error
+	if err != nil && !errors.Is(gorm.ErrRecordNotFound, err) {
+		logger.Errorf("GetUserRecord query db err: %v", err)
 		return nil, err
 	}
 

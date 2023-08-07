@@ -13,7 +13,7 @@ import (
 )
 
 // Handle /start command
-func (h *CommandMap) handleStartCommand(helper *utils.MessageHelper) {
+func (h *CommandMap) handleStartCmd(helper *utils.MessageHelper) {
 	// Check user is allowlist user..
 	if !h.PeonService.IsAllowListUser(helper.UserIdStr()) {
 		return
@@ -55,5 +55,5 @@ func (h *CommandMap) handleStartCommand(helper *utils.MessageHelper) {
 	sendText := fmt.Sprintf(config.GetTextLang().TipsStartCmd, helper.Chat.Title)
 	newMsg := tgbotapi.NewMessage(helper.ChatId(), sendText)
 	newMsg.ParseMode = tgbotapi.ModeHTML
-	helper.BotAPI.Send(newMsg)
+	h.BotService.SendMessage(newMsg, 0)
 }

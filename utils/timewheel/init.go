@@ -13,29 +13,28 @@ func GetTimingWheel() *timewheel.TimeWheel[Delayable] {
 	return wheel
 }
 
-func Init() (wheel *timewheel.TimeWheel[Delayable], err error) {
-
-	wheel, err = timewheel.New[Delayable](time.Second, 60)
+func Init() (result *timewheel.TimeWheel[Delayable], err error) {
+	wheel, err = timewheel.New[Delayable](time.Second/2, 60)
 	if err != nil {
-		fmt.Println("Timewheel initialize err: %s", err.Error())
+		fmt.Printf("Timewheel initialize err: %s\n", err.Error())
 		return nil, err
 	}
 
+	wheel.Start()
 	return wheel, nil
 }
 
-func AddTask(delay time.Duration, taskObj Delayable) (taskId uint64, err error) {
+func AddTask(delay time.Duration, taskObj Delayable) (err error) {
 	newTask := timewheel.Task[Delayable]{
 		Data: taskObj,
 		TimeoutCallback: func(t timewheel.Task[Delayable]) {
 			t.Data.Run()
 		},
 	}
-	nid, err := wheel.AddTask(delay, newTask)
+	_, err = wheel.AddTask(delay, newTask)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	taskId = uint64(nid)
-	return taskId, nil
+	return nil
 }

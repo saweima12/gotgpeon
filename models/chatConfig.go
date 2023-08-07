@@ -1,5 +1,7 @@
 package models
 
+import "gotgpeon/utils/sliceutil"
+
 type CheckerConfig struct {
 	Name      string      `json:"name"`
 	Parameter interface{} `json:"parameter,omitempty"`
@@ -39,4 +41,8 @@ func NewDefaultChatConfig(chatId string, chatName string, adminstrators []string
 
 func (c *ChatConfig) IsAvaliable() bool {
 	return c.Status == OK
+}
+
+func (c *ChatConfig) IsAdminstrator(idStr string) bool {
+	return sliceutil.Contains(idStr, c.Adminstrators)
 }

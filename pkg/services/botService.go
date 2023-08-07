@@ -1,18 +1,31 @@
 package services
 
 import (
-	"fmt"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot/boterr"
+	"gotgpeon/utils/poolutil"
+	"gotgpeon/utils/timewheel"
 	"time"
 
+	"github.com/avast/retry-go"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+type delayDeleteTask struct {
+	MessageId  int
+	ChatId     int64
+	BotService BotService
+}
+
+func (t *delayDeleteTask) Run() {
+	t.BotService.DeleteMessageById(t.ChatId, t.MessageId)
+}
+
 type BotService interface {
 	SendMessage(message tgbotapi.Chattable, duration time.Duration)
-	DeleteMessage(chatId int64, messageId int)
+	DeleteMessageById(chatId int64, messageId int)
+	SetPermission(chatId int64, userId int64, level int, until_date int64) error
 }
 
 type botService struct {
@@ -29,28 +42,30 @@ func (s *botService) SendMessage(message tgbotapi.Chattable, duration time.Durat
 	resultMsg, err := s.BotAPI.Send(message)
 
 	if err != nil {
-		logger.Errorf("Send message err: %v", err)
+		logger.Errorf("SendMessage err: %v", err)
 		return
 	}
 
 	if duration > 0 {
-		// TODO: Delay delete message.
-		fmt.Println(resultMsg)
-	}
-}
-
-func (s *botService) DeleteMessage(chatId int64, messageId int) {
-	deleteReq := tgbotapi.NewDeleteMessage(chatId, messageId)
-	_, err := s.BotAPI.Request(deleteReq)
-
-	if err != nil {
-		if boterr.IsNotFound(err) {
-			return
+		// Commit delay delete task to timewheel.
+		task := &delayDeleteTask{
+			ChatId:     resultMsg.Chat.ID,
+			MessageId:  resultMsg.MessageID,
+			BotService: s,
 		}
+		timewheel.AddTask(duration, task)
 	}
 }
 
-func (s *botService) SetPermission(chatId int64, userId int64, level int, until_date int64) {
+func (s *botService) DeleteMessageById(chatId int64, messageId int) {
+	deleteReq := tgbotapi.NewDeleteMessage(chatId, messageId)
+
+	poolutil.Submit(func() {
+		s.processDeleteReq(deleteReq)
+	})
+}
+
+func (s *botService) SetPermission(chatId int64, userId int64, level int, until_date int64) error {
 	permission := getPermissionByLevel(level)
 	operate := tgbotapi.RestrictChatMemberConfig{
 		ChatMemberConfig: tgbotapi.ChatMemberConfig{ChatID: chatId, UserID: userId},
@@ -58,13 +73,28 @@ func (s *botService) SetPermission(chatId int64, userId int64, level int, until_
 		Permissions:      permission,
 	}
 
-	_, err := s.BotAPI.Send(operate)
+	resp, err := s.BotAPI.Request(operate)
 	if err != nil {
-		logger.Errorf("SetPermission err: %s", err.Error())
+		logger.Errorf("SetPermission err: %s, resp: %v", err.Error(), resp)
+		return err
 	}
 
-	// TODO: Send setPermission tips.
+	return nil
+}
 
+func (s *botService) processDeleteReq(deleteReq tgbotapi.Chattable) {
+	retry.Do(func() error {
+		// Send delete request to telegram.
+		_, err := s.BotAPI.Request(deleteReq)
+		if err != nil {
+			if boterr.IsNotFound(err) {
+				return nil
+			}
+			logger.Errorf("DeleteMessage err: %s", err.Error())
+			return err
+		}
+		return nil
+	}, retry.Attempts(5), retry.Delay(time.Second))
 }
 
 func getPermissionByLevel(level int) *tgbotapi.ChatPermissions {

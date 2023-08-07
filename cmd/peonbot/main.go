@@ -10,6 +10,7 @@ import (
 	"gotgpeon/pkg/tgbot"
 	"gotgpeon/utils/goccutil"
 	"gotgpeon/utils/poolutil"
+	"gotgpeon/utils/timewheel"
 	"net/http"
 )
 
@@ -43,17 +44,24 @@ func main() {
 		panic("Initialize Logger err:" + err.Error())
 	}
 
+	// Initialize database and redis connection.
+	err = db.InitDbConn(&cfg.Common)
+	if err != nil {
+		panic("Initialize Database connection err:" + err.Error())
+	}
+
 	// Initialize ants pool.
 	err = poolutil.Init()
 	if err != nil {
 		panic("Initialize goroutine pool err" + err.Error())
 	}
 
-	// Initialize database and redis connection.
-	err = db.InitDbConn(&cfg.Common)
+	// Initialize timingwheel.
+	wheel, err := timewheel.Init()
 	if err != nil {
-		panic("Initialize Database connection err:" + err.Error())
+		panic("Initialize timewheel err: %s" + err.Error())
 	}
+	defer wheel.Stop()
 
 	// Initialize Bot & Add webhook
 	botClient, err := tgbot.InitTgBot(&config.GetConfig().TgBot)
@@ -73,6 +81,7 @@ func main() {
 
 	// When shutdown timing, close the UpdateProcess
 	defer client.Stop()
+
 	// Initialize opencc
 	goccutil.InitOpenCC()
 

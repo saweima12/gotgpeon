@@ -4,21 +4,33 @@ import (
 	"gotgpeon/models"
 	"gotgpeon/utils"
 	"strconv"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 // handle /point command
-func (h *CommandMap) handlePointCommand(helper *utils.MessageHelper) {
+func (h *CommandMap) handlePointCmd(helper *utils.MessageHelper) {
+
 	// Define parameter
 	chatIdStr := helper.ChatIdStr()
-	query := &models.MessageRecord{
-		UserId: helper.UserIdStr(),
+	chatCfg := h.PeonService.GetChatConfig(chatIdStr, helper.Chat.Title)
+
+	// Check group is avaliable.
+	if !chatCfg.IsAvaliable() {
+		return
 	}
 
+	query := &models.MessageRecord{
+		UserId:   helper.UserIdStr(),
+		FullName: helper.FullName(),
+	}
+	// Create tips message.
 	userRecord := h.RecordService.GetUserRecord(chatIdStr, query)
+
 	text := "Point: " + strconv.Itoa(userRecord.Point)
-	// Send tips
 	newMsg := tgbotapi.NewMessage(helper.ChatId(), text)
-	helper.BotAPI.Send(newMsg)
+
+	// Send tips
+	h.BotService.SendMessage(newMsg, time.Second*5)
 }

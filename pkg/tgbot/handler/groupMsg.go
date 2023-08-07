@@ -2,6 +2,7 @@ package handler
 
 import (
 	"gotgpeon/logger"
+	"gotgpeon/models"
 	"gotgpeon/utils"
 )
 
@@ -11,14 +12,16 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 	// Check chat is avaliable
 	chatCfg := h.peonService.GetChatConfig(chatId, helper.Chat.Title)
 
-	// if chatCfg.Status != models.OK {
-	// 	return
-	// }
+	// check group is avaliable.
+	if chatCfg.Status != models.OK {
+		return
+	}
+
 	ctx := h.getMessageContext(helper, chatCfg)
 	result := h.checker.CheckMessage(helper, ctx)
 
 	if result.MarkDelete {
-		h.botService.DeleteMessage(helper.ChatId(), helper.MessageID)
+		h.botService.DeleteMessageById(helper.ChatId(), helper.MessageID)
 	}
 
 	if !result.MarkRecord {

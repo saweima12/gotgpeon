@@ -27,10 +27,10 @@ func (h *CommandMap) Invoke(helper *utils.MessageHelper) {
 
 func (h *CommandMap) Init() {
 	h.commandMap = map[string]func(helper *utils.MessageHelper){
-		"start": h.handleStartCommand,
-		"point": h.handlePointCommand,
-		"del":   h.handleDelCommand,
-		// "setlevel": h.handleSetLevelCommand,
+		"start":    h.handleStartCmd,
+		"point":    h.handlePointCmd,
+		"del":      h.handleDelCmd,
+		"setlevel": h.handleSetLevelCmd,
 		// "save":     h.handleSaveCommand,
 	}
 }
