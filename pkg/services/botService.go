@@ -4,7 +4,6 @@ import (
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot/boterr"
-	"gotgpeon/utils/poolutil"
 	"gotgpeon/utils/timewheel"
 	"time"
 
@@ -60,13 +59,11 @@ func (s *botService) SendMessage(message tgbotapi.Chattable, duration time.Durat
 func (s *botService) DeleteMessageById(chatId int64, messageId int) {
 	deleteReq := tgbotapi.NewDeleteMessage(chatId, messageId)
 
-	poolutil.Submit(func() {
-		s.processDeleteReq(deleteReq)
-	})
+	s.processDeleteReq(deleteReq)
 }
 
 func (s *botService) SetPermission(chatId int64, userId int64, level int, until_date int64) error {
-	permission := getPermissionByLevel(level)
+	permission := getChatPermissionByLevel(level)
 	operate := tgbotapi.RestrictChatMemberConfig{
 		ChatMemberConfig: tgbotapi.ChatMemberConfig{ChatID: chatId, UserID: userId},
 		UntilDate:        until_date,
@@ -87,7 +84,7 @@ func (s *botService) processDeleteReq(deleteReq tgbotapi.Chattable) {
 		// Send delete request to telegram.
 		_, err := s.BotAPI.Request(deleteReq)
 		if err != nil {
-			if boterr.IsNotFound(err) {
+			if boterr.IsNotFound(err) || boterr.IsCantBeDelete(err) {
 				return nil
 			}
 			logger.Errorf("DeleteMessage err: %s", err.Error())
@@ -97,7 +94,7 @@ func (s *botService) processDeleteReq(deleteReq tgbotapi.Chattable) {
 	}, retry.Attempts(5), retry.Delay(time.Second))
 }
 
-func getPermissionByLevel(level int) *tgbotapi.ChatPermissions {
+func getChatPermissionByLevel(level int) *tgbotapi.ChatPermissions {
 	result := &tgbotapi.ChatPermissions{}
 
 	if level >= models.NONE {

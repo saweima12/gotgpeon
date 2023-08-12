@@ -1,9 +1,15 @@
 package handler
 
 import (
+	"fmt"
+	"gotgpeon/config"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/utils"
+	"gotgpeon/utils/poolutil"
+	"time"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
@@ -21,15 +27,33 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 	result := h.checker.CheckMessage(helper, ctx)
 
 	if result.MarkDelete {
-		h.botService.DeleteMessageById(helper.ChatId(), helper.MessageID)
+		h.handleDeleteMessage(helper, result.Message)
 	}
 
-	if !result.MarkRecord {
-		return
+	if result.MarkRecord {
+		ctx.Record.Point += 1
 	}
-	// Add point.
-	err := h.recordService.AddUserPoint(chatId, ctx.Record)
+
+	// Update user record.
+	err := h.recordService.SetUserRecordCache(chatId, ctx.Record)
 	if err != nil {
 		logger.Errorf("HandleGroupMessage Err: %s", err.Error())
 	}
+}
+
+func (h *messageHandler) handleDeleteMessage(helper *utils.MessageHelper, text string) {
+	poolutil.Submit(func() {
+		// send delete request.
+		h.botService.DeleteMessageById(helper.ChatId(), helper.MessageID)
+
+		msgText := fmt.Sprintf(config.GetTextLang().TipsDeleteMsg,
+			helper.FullName(),
+			helper.UserIdStr(),
+			text,
+		)
+		// delete finish, send tips.
+		newMsg := tgbotapi.NewMessage(helper.ChatId(), msgText)
+		newMsg.ParseMode = tgbotapi.ModeMarkdown
+		h.botService.SendMessage(newMsg, time.Second*5)
+	})
 }

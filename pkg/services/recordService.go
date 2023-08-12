@@ -7,8 +7,8 @@ import (
 
 type RecordService interface {
 	GetUserRecord(chatId string, query *models.MessageRecord) *models.MessageRecord
-	AddUserPoint(chatId string, record *models.MessageRecord) error
-	SetUserRecord(chatId string, record *models.MessageRecord) error
+	SetUserRecordCache(chatId string, record *models.MessageRecord) error
+	SetUserRecordDB(chatId string, record *models.MessageRecord) error
 }
 
 type recordService struct {
@@ -31,25 +31,20 @@ func (s recordService) GetUserRecord(chatId string, query *models.MessageRecord)
 	return record
 }
 
-func (s recordService) AddUserPoint(chatId string, data *models.MessageRecord) error {
-	// Add point.
-	data.Point += 1
+func (s recordService) SetUserRecordCache(chatId string, data *models.MessageRecord) error {
 	err := s.RecordRepo.SetUserRecordCache(chatId, data)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (s recordService) SetUserRecord(chatId string, data *models.MessageRecord) error {
-	err := s.RecordRepo.SetUserRecordCache(chatId, data)
+func (s recordService) SetUserRecordDB(chatId string, data *models.MessageRecord) error {
+	err := s.RecordRepo.SetUserRecordDB(chatId, data)
 	if err != nil {
 		return err
 	}
 
-	err = s.RecordRepo.SetUserRecordDB(chatId, data)
-	if err != nil {
-		return err
-	}
 	return nil
 }

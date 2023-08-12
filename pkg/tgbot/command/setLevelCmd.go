@@ -1,10 +1,16 @@
 package command
 
 import (
+	"fmt"
+	"gotgpeon/config"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/utils"
 	"strconv"
+	"strings"
+	"time"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func (h *CommandMap) handleSetLevelCmd(helper *utils.MessageHelper) {
@@ -42,19 +48,35 @@ func (h *CommandMap) handleSetLevelCmd(helper *utils.MessageHelper) {
 	userRecord.MemberLevel = level
 	userRecord.FullName = targetName
 
-	err := h.RecordService.SetUserRecord(chatIdStr, userRecord)
+	err := h.RecordService.SetUserRecordCache(chatIdStr, userRecord)
 	if err != nil {
 		logger.Errorf("Set member %s level err: %s", targetName, err.Error())
 		return
 	}
 
-	err = h.BotService.SetPermission(helper.ChatId(), replyMsg.From.ID, level)
+	err = h.RecordService.SetUserRecordDB(chatIdStr, userRecord)
 	if err != nil {
 		logger.Errorf("Set member %s level err: %s", targetName, err.Error())
 		return
 	}
 
-	// TODO: Send success tips.
+	err = h.BotService.SetPermission(helper.ChatId(), replyMsg.From.ID, level, 0)
+	if err != nil {
+		logger.Errorf("Set member %s level err: %s", targetName, err.Error())
+		return
+	}
+
+	levelText := strings.ToUpper(helper.CommandArguments())
+	// Send success tips.
+	msgText := fmt.Sprintf(
+		config.GetTextLang().TipsSetPermissionCmd,
+		targetName,
+		targetIdStr,
+		levelText,
+	)
+	newMsg := tgbotapi.NewMessage(helper.ChatId(), msgText)
+	newMsg.ParseMode = tgbotapi.ModeMarkdown
+	h.BotService.SendMessage(newMsg, time.Second*5)
 }
 
 func validateSetLevelParameter(helper *utils.MessageHelper) (level int, ok bool) {

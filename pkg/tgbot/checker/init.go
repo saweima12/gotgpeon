@@ -26,11 +26,14 @@ type MessageChecker struct {
 
 func (c *MessageChecker) Init() {
 	c.checkerMap = map[string]func(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter interface{}) bool{
-		"type":     c.CheckTypeOK,
-		"entities": c.CheckEntitiesOK,
-		"viabot":   c.CheckViabotOK,
-		"username": c.CheckNameOK,
-		"content":  c.CheckContentOK,
+		"Type":          c.CheckTypeNoMedia,
+		"Forward":       c.CheckNoForward,
+		"Entities":      c.CheckEntitiesOK,
+		"Viabot":        c.CheckViabotOK,
+		"SpchName":      c.CheckNameNospchLang,
+		"SpchContent":   c.CheckContentNoSpchLang,
+		"MeLangName":    c.CheckNameNoMelang,
+		"MeLangContent": c.CheckContentNoMelang,
 	}
 }
 

@@ -9,22 +9,14 @@ import (
 	"strings"
 )
 
-var MePtn = regexp.MustCompile("[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF]")
 var ChPtn = regexp.MustCompile("[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]")
 
-func (c *MessageChecker) CheckContentOK(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
+func (c *MessageChecker) CheckContentNoSpchLang(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
 	if helper.Text != "" {
-		// check middle east language.
-		if MePtn.MatchString(helper.Text) {
-			result.MarkDelete = true
-			result.Message = config.GetTextLang().TipsContentNozhtw
-			return false
-		}
-
 		// check spchinese
 		if !checkSpChineseOK(helper.Text, 2) {
 			result.MarkDelete = true
-			result.Message = config.GetTextLang().TipsContentNozhtw
+			result.Message = config.GetTextLang().ErrContentNozhtw
 			return false
 		}
 	}
@@ -32,18 +24,11 @@ func (c *MessageChecker) CheckContentOK(helper *utils.MessageHelper, ctx *models
 	return true
 }
 
-func (c *MessageChecker) CheckNameOK(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
-
-	// check middle east language.
-	if MePtn.MatchString(helper.FullName()) {
-		result.MarkDelete = true
-		result.Message = config.GetTextLang().TipsNameBlock
-		return false
-	}
-
+func (c *MessageChecker) CheckNameNospchLang(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
 	if !checkSpChineseOK(helper.FullName(), 1) {
+		// Check sender name
 		result.MarkDelete = true
-		result.Message = config.GetTextLang().TipsNameBlock
+		result.Message = config.GetTextLang().ErrNameBlock
 		return false
 	}
 

@@ -50,22 +50,14 @@ func (repo *recordRepository) GetUserRecord(chatId string, query *models.Message
 
 	err = db.Where("user_id = ? AND chat_id = ?", query.UserId, chatId).
 		Take(&entity).Error
-	if err != nil && !errors.Is(gorm.ErrRecordNotFound, err) {
-		logger.Errorf("GetUserRecord query db err: %v", err)
+	if err != nil {
+		if !errors.Is(gorm.ErrRecordNotFound, err) {
+			logger.Errorf("GetUserRecord query db err: %v", err)
+		}
 		return nil, err
 	}
 
-	result = &models.MessageRecord{
-		UserId:      entity.UserId,
-		FullName:    entity.FullName,
-		MemberLevel: entity.MemberLevel,
-		Point:       entity.MsgCount,
-		CreatedTime: entity.CreatedTime,
-	}
-
-	repo.SetUserRecordCache(chatId, result)
 	return result, nil
-
 }
 
 func (repo *recordRepository) SetUserRecordCache(chatId string, record *models.MessageRecord) error {

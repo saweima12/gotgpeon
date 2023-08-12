@@ -7,14 +7,18 @@ import (
 	"gotgpeon/utils/sliceutil"
 )
 
-// Check the message for any issues and return whether to continue the inspection.
-func (c *MessageChecker) CheckTypeOK(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
-	// check isforward ?
+func (c *MessageChecker) CheckNoForward(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
 	if helper.IsForward() {
 		result.MarkDelete = true
+		result.Message = config.GetTextLang().ErrForward
 		return false
 	}
 
+	return true
+}
+
+// Check the message for any issues and return whether to continue the inspection.
+func (c *MessageChecker) CheckTypeNoMedia(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
 	// check message type
 	if ctx.Record.MemberLevel >= models.LIMIT {
 		if c.checkLimitUserOK(helper, ctx) {
@@ -26,6 +30,7 @@ func (c *MessageChecker) CheckTypeOK(helper *utils.MessageHelper, ctx *models.Me
 	// Check type is not text.
 	if helper.Text == "" {
 		result.MarkDelete = true
+		result.Message = config.GetTextLang().ErrTypeMedia
 		return false
 	}
 

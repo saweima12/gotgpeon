@@ -1,6 +1,8 @@
 tips_start_cmd: "群組 <strong>%s</strong> 註冊成功。"
-tips_setpermission_cmd: "設置 <strong>%s</strong> 使用者權限為 %s 成功"
+tips_setpermission_cmd: "設置 [%s](tg://user?id=%s) 使用者權限為 *%s* 成功"
+tips_delete_msg: "已攔截 [%s](tg://user?id=%s) 使用者的訊息，原因：[#%s](tg://user?id=%[2]s)"
 
-tips_content_nozhtw: "新進人員請使用正體中文進行溝通。"
-tips_name_block : "使用者名稱包含禁止字元"
-
+err_content_nozhtw: "新進人員請使用正體中文進行溝通。"
+err_name_block: "使用者名稱包含禁止字元。"
+err_media_content: "包含多媒體訊息。"
+err_forward: "轉發訊息。"
