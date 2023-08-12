@@ -1,11 +1,15 @@
 package repositories
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/models/entity"
+	"gotgpeon/utils/jsonutil"
+	"strconv"
 
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -13,9 +17,10 @@ import (
 )
 
 type RecordRepository interface {
-	GetUserRecord(chatId string, query *models.MessageRecord) (result *models.MessageRecord, err error)
-	SetUserRecordCache(chatId string, record *models.MessageRecord) error
-	SetUserRecordDB(chatId string, record *models.MessageRecord) error
+	GetUserRecord(chatId int64, query *models.MessageRecord) (result *models.MessageRecord, err error)
+	GetAllCacheRecord(chatId int64) (result []models.MessageRecord, err error)
+	SetUserRecordCache(chatId int64, record *models.MessageRecord) error
+	SetUserRecordDB(chatId int64, record *models.MessageRecord) error
 }
 
 type recordRepository struct {
@@ -28,13 +33,14 @@ func NewRecordRepository(dbConn *gorm.DB, cacheConn *redis.Client) RecordReposit
 	}
 }
 
-func (repo *recordRepository) GetUserRecord(chatId string, query *models.MessageRecord) (result *models.MessageRecord, err error) {
+func (repo *recordRepository) GetUserRecord(chatId int64, query *models.MessageRecord) (result *models.MessageRecord, err error) {
 	rdb := repo.GetRedis()
 	// Get chat's point cache.
 	namespace := getRecordNamespace(chatId)
 
 	// Get Record struct
-	resp, err := rdb.HGet(baseCtx, namespace, query.UserId).Bytes()
+	fieldKey := strconv.Itoa(int(query.MemberId))
+	resp, err := rdb.HGet(baseCtx, namespace, fieldKey).Bytes()
 	if err == nil {
 		// Cache has user's record.
 		err := json.Unmarshal(resp, &result)
@@ -45,10 +51,10 @@ func (repo *recordRepository) GetUserRecord(chatId string, query *models.Message
 		return result, nil
 	}
 	// Cache didn't have user record, try to find from database.
-	entity := entity.PeonBehaviorRecord{}
+	entity := entity.PeonChatMemberRecord{}
 	db := repo.GetDB()
 
-	err = db.Where("user_id = ? AND chat_id = ?", query.UserId, chatId).
+	err = db.Where("member_id = ? AND chat_id = ?", query.MemberId, chatId).
 		Take(&entity).Error
 	if err != nil {
 		if !errors.Is(gorm.ErrRecordNotFound, err) {
@@ -60,12 +66,37 @@ func (repo *recordRepository) GetUserRecord(chatId string, query *models.Message
 	return result, nil
 }
 
-func (repo *recordRepository) SetUserRecordCache(chatId string, record *models.MessageRecord) error {
+func (repo *recordRepository) GetAllCacheRecord(chatId int64) (result []models.MessageRecord, err error) {
+	// declare parameter
+	result = make([]models.MessageRecord, 0)
+	namespace := getRecordNamespace(chatId)
+
+	resp, err := repo.GetRedis().HGetAll(context.Background(), namespace).Result()
+	if err != nil {
+		logger.Errorf("GetAllCacheRecord err: %s", err.Error())
+		return nil, err
+	}
+
+	for _, value := range resp {
+		tempRecord := models.MessageRecord{}
+		err = jsonutil.UnmarshalFromString(value, &tempRecord)
+
+		if err != nil {
+			logger.Errorf("GetAllCacheRecord Unmarshal err: %s", err.Error())
+			return nil, err
+		}
+
+		result = append(result, tempRecord)
+	}
+	return result, nil
+}
+
+func (repo *recordRepository) SetUserRecordCache(chatId int64, record *models.MessageRecord) error {
 	rdb := repo.GetRedis()
 
 	// Marshal to byte
 	nameSpace := getRecordNamespace(chatId)
-	byte, err := json.Marshal(record)
+	byte, err := jsonutil.Marshal(record)
 	if err != nil {
 		logger.Errorf("SetUserRecordCache Marshal err: %s", err.Error())
 		return err
@@ -73,7 +104,8 @@ func (repo *recordRepository) SetUserRecordCache(chatId string, record *models.M
 
 	// create insert map
 	data := map[string]interface{}{}
-	data[record.UserId] = byte
+	kMemberId := strconv.Itoa(int(record.MemberId))
+	data[kMemberId] = byte
 
 	// Try set cache
 	err = rdb.HSet(baseCtx, nameSpace, data).Err()
@@ -84,12 +116,11 @@ func (repo *recordRepository) SetUserRecordCache(chatId string, record *models.M
 	return nil
 }
 
-func (repo *recordRepository) SetUserRecordDB(chatId string, record *models.MessageRecord) error {
+func (repo *recordRepository) SetUserRecordDB(chatId int64, record *models.MessageRecord) error {
 
-	schema := entity.PeonBehaviorRecord{
+	schema := entity.PeonChatMemberRecord{
 		ChatId:      chatId,
-		UserId:      record.UserId,
-		FullName:    record.FullName,
+		MemberId:    record.MemberId,
 		MsgCount:    record.Point,
 		MemberLevel: record.MemberLevel,
 	}
@@ -106,6 +137,6 @@ func (repo *recordRepository) SetUserRecordDB(chatId string, record *models.Mess
 	return nil
 }
 
-func getRecordNamespace(chatId string) string {
-	return chatId + ":record_point"
+func getRecordNamespace(chatId int64) string {
+	return fmt.Sprintf("%d:record_point", chatId)
 }

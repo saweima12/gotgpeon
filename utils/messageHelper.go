@@ -47,3 +47,43 @@ func (h *MessageHelper) ChatIdStr() string {
 	chatId := int(h.Chat.ID)
 	return strconv.Itoa(chatId)
 }
+
+func (h *MessageHelper) ContentType() string {
+	if h.ForwardDate != 0 {
+		return "forward"
+	}
+
+	if h.Sticker != nil {
+		return "sticker"
+	}
+
+	if h.Dice != nil {
+		return "dice"
+	}
+
+	if h.Video != nil {
+		return "video"
+	}
+
+	if h.Animation != nil {
+		return "animation"
+	}
+
+	if h.Photo != nil {
+		return "photo"
+	}
+
+	if h.Audio != nil {
+		return "audio"
+	}
+
+	if h.Document != nil {
+		return "document"
+	}
+
+	if h.Text != "" {
+		return "text"
+	}
+
+	return "unknown"
+}

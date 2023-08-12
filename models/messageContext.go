@@ -13,5 +13,5 @@ type MessageContext struct {
 }
 
 func (ctx *MessageContext) IsAdminstrator() bool {
-	return sliceutil.Contains(ctx.Record.UserId, ctx.ChatCfg.Adminstrators)
+	return sliceutil.Contains(ctx.Record.MemberId, ctx.ChatCfg.Adminstrators)
 }

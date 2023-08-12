@@ -1,8 +1,8 @@
 package models
 
 const (
-	OK      = "ok"
-	NG      = "ng"
+	OK      = 1
+	NG      = 0
 	UNKNOWN = "unknown"
 )
 

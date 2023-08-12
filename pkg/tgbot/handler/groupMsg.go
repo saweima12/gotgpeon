@@ -6,6 +6,7 @@ import (
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/utils"
+	"gotgpeon/utils/jsonutil"
 	"gotgpeon/utils/poolutil"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 
 func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 
-	chatId := helper.ChatIdStr()
+	chatId := helper.ChatId()
 	// Check chat is avaliable
 	chatCfg := h.peonService.GetChatConfig(chatId, helper.Chat.Title)
 
@@ -43,6 +44,19 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 
 func (h *messageHandler) handleDeleteMessage(helper *utils.MessageHelper, text string) {
 	poolutil.Submit(func() {
+		// print log
+		jsonStr, err := jsonutil.MarshalToString(helper.Message)
+		if err != nil {
+			logger.Errorf("handleDeleteMessage err: %v", helper)
+		}
+		logger.Infof("DeleteMessage: %s", jsonStr)
+
+		// Insert into database
+		err = h.peonService.InsertDeletedRecord(helper.ChatId(), helper.ContentType(), helper.Message)
+		if err != nil {
+			logger.Errorf("handleDeleteMessage insertIntoDb err: %s", err.Error())
+		}
+
 		// send delete request.
 		h.botService.DeleteMessageById(helper.ChatId(), helper.MessageID)
 
@@ -51,6 +65,7 @@ func (h *messageHandler) handleDeleteMessage(helper *utils.MessageHelper, text s
 			helper.UserIdStr(),
 			text,
 		)
+
 		// delete finish, send tips.
 		newMsg := tgbotapi.NewMessage(helper.ChatId(), msgText)
 		newMsg.ParseMode = tgbotapi.ModeMarkdown

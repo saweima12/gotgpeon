@@ -8,18 +8,18 @@ type CheckerConfig struct {
 }
 
 type ChatConfig struct {
-	Status           string          `json:"status"`
-	ChatId           string          `json:"chat_id"`
+	Status           int             `json:"status"`
+	ChatId           int64           `json:"chat_id"`
 	ChatName         string          `json:"chat_name"`
 	SeniorCount      int             `json:"senior_count"`
 	JuniorDay        int             `json:"junior_day"`
 	SeniorDay        int             `json:"senior_day"`
 	CheckLowestCount int             `json:"check_lowest_count"`
-	Adminstrators    []string        `json:"adminstrators"`
+	Adminstrators    []int64         `json:"adminstrators"`
 	CheckerList      []CheckerConfig `json:"checker_config"`
 }
 
-func NewDefaultChatConfig(chatId string, chatName string, adminstrators []string) *ChatConfig {
+func NewDefaultChatConfig(chatId int64, chatName string, adminstrators []int64) *ChatConfig {
 	return &ChatConfig{
 		Status:           NG,
 		ChatId:           chatId,
@@ -43,6 +43,6 @@ func (c *ChatConfig) IsAvaliable() bool {
 	return c.Status == OK
 }
 
-func (c *ChatConfig) IsAdminstrator(idStr string) bool {
-	return sliceutil.Contains(idStr, c.Adminstrators)
+func (c *ChatConfig) IsAdminstrator(memberId int64) bool {
+	return sliceutil.Contains(memberId, c.Adminstrators)
 }

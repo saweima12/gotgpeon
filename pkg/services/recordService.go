@@ -6,9 +6,9 @@ import (
 )
 
 type RecordService interface {
-	GetUserRecord(chatId string, query *models.MessageRecord) *models.MessageRecord
-	SetUserRecordCache(chatId string, record *models.MessageRecord) error
-	SetUserRecordDB(chatId string, record *models.MessageRecord) error
+	GetUserRecord(chatId int64, query *models.MessageRecord) *models.MessageRecord
+	SetUserRecordCache(chatId int64, record *models.MessageRecord) error
+	SetUserRecordDB(chatId int64, record *models.MessageRecord) error
 }
 
 type recordService struct {
@@ -21,17 +21,17 @@ func NewRecordService(recordRepo repositories.RecordRepository) RecordService {
 	}
 }
 
-func (s recordService) GetUserRecord(chatId string, query *models.MessageRecord) *models.MessageRecord {
+func (s recordService) GetUserRecord(chatId int64, query *models.MessageRecord) *models.MessageRecord {
 	record, err := s.RecordRepo.GetUserRecord(chatId, query)
 
 	if err != nil {
-		return models.NewMessageRecord(query.UserId, query.FullName)
+		return models.NewMessageRecord(query.MemberId, query.FullName)
 	}
 
 	return record
 }
 
-func (s recordService) SetUserRecordCache(chatId string, data *models.MessageRecord) error {
+func (s recordService) SetUserRecordCache(chatId int64, data *models.MessageRecord) error {
 	err := s.RecordRepo.SetUserRecordCache(chatId, data)
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func (s recordService) SetUserRecordCache(chatId string, data *models.MessageRec
 	return nil
 }
 
-func (s recordService) SetUserRecordDB(chatId string, data *models.MessageRecord) error {
+func (s recordService) SetUserRecordDB(chatId int64, data *models.MessageRecord) error {
 	err := s.RecordRepo.SetUserRecordDB(chatId, data)
 	if err != nil {
 		return err

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"encoding/json"
+	"fmt"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/models/entity"
@@ -13,11 +14,12 @@ import (
 )
 
 type ChatRepository interface {
-	GetChatConfig(chatId string) (*models.ChatConfig, error)
-	SetConfigCache(chatId string, value *models.ChatConfig) error
-	SetConfigDb(chatId string, value *models.ChatConfig) error
-	GetViolation(chatId string, userId string) (num int, err error)
-	SetViolation(chatId string, userId string) (bool, error)
+	GetAvaliableChatIds() []string
+	GetChatConfig(chatId int64) (*models.ChatConfig, error)
+	SetConfigCache(chatId int64, value *models.ChatConfig) error
+	SetConfigDb(chatId int64, value *models.ChatConfig) error
+	GetViolation(chatId int64, userId int64) (num int, err error)
+	SetViolation(chatId int64, userId int64) (bool, error)
 }
 
 type chatRepository struct {
@@ -30,8 +32,22 @@ func NewChatRepo(dbConn *gorm.DB, redisConn *redis.Client) ChatRepository {
 	}
 }
 
+func (repo *chatRepository) GetAvaliableChatIds() []string {
+	var result []string
+
+	query := entity.PeonChatConfig{}
+	err := repo.GetDB().Table(query.TableName()).
+		Select("chat_id").Where("status = ?", 1).Find(&result).Error
+	if err != nil {
+		logger.Errorf("GetAvaliableChatIds err: %s", err.Error())
+		return nil
+	}
+
+	return result
+}
+
 // Load GroupChat Configuration.
-func (repo *chatRepository) GetChatConfig(chatId string) (*models.ChatConfig, error) {
+func (repo *chatRepository) GetChatConfig(chatId int64) (*models.ChatConfig, error) {
 
 	var result *models.ChatConfig
 	configKey := repo.getConfigNameSpace(chatId)
@@ -69,7 +85,7 @@ func (repo *chatRepository) GetChatConfig(chatId string) (*models.ChatConfig, er
 	return nil, err
 }
 
-func (repo *chatRepository) SetConfigCache(chatId string, value *models.ChatConfig) error {
+func (repo *chatRepository) SetConfigCache(chatId int64, value *models.ChatConfig) error {
 	// serialize to byte
 	bytes, err := json.Marshal(value)
 	if err != nil {
@@ -85,8 +101,9 @@ func (repo *chatRepository) SetConfigCache(chatId string, value *models.ChatConf
 	return nil
 }
 
-func (repo *chatRepository) SetConfigDb(chatId string, value *models.ChatConfig) error {
+func (repo *chatRepository) SetConfigDb(chatId int64, value *models.ChatConfig) error {
 
+	// process parameter.
 	bytes, err := json.Marshal(value)
 	if err != nil {
 		logger.Errorf("SetConfigDb Marshal error: %s", err.Error())
@@ -113,7 +130,7 @@ func (repo *chatRepository) SetConfigDb(chatId string, value *models.ChatConfig)
 	return nil
 }
 
-func (repo *chatRepository) GetViolation(chatId string, userId string) (num int, err error) {
+func (repo *chatRepository) GetViolation(chatId int64, userId int64) (num int, err error) {
 	rdb := repo.GetRedis()
 	key := repo.getViolationNamespace(chatId, userId)
 
@@ -132,15 +149,15 @@ func (repo *chatRepository) GetViolation(chatId string, userId string) (num int,
 	return num, nil
 }
 
-func (repo *chatRepository) SetViolation(chatId string, userId string) (bool, error) {
+func (repo *chatRepository) SetViolation(chatId int64, userId int64) (bool, error) {
 	// TODO: Didn't Implement.
 	return false, nil
 }
 
-func (repo *chatRepository) getConfigNameSpace(chatId string) string {
-	return chatId + ":config"
+func (repo *chatRepository) getConfigNameSpace(chatId int64) string {
+	return fmt.Sprintf("%d:config", chatId)
 }
 
-func (repo *chatRepository) getViolationNamespace(chatId string, userId string) string {
-	return chatId + ":violation:" + userId
+func (repo *chatRepository) getViolationNamespace(chatId int64, userId int64) string {
+	return fmt.Sprintf("%d:violation:%d", chatId, userId)
 }

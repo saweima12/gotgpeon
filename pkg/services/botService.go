@@ -101,6 +101,10 @@ func getChatPermissionByLevel(level int) *tgbotapi.ChatPermissions {
 		result.CanSendMessages = true
 	}
 
+	if level >= models.LIMIT {
+		result.CanSendOtherMessages = true
+	}
+
 	if level >= models.JUNIOR {
 		result.CanSendOtherMessages = true
 		result.CanSendMediaMessages = true

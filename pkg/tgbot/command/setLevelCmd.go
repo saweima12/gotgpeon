@@ -6,7 +6,6 @@ import (
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/utils"
-	"strconv"
 	"strings"
 	"time"
 
@@ -14,8 +13,8 @@ import (
 )
 
 func (h *CommandMap) handleSetLevelCmd(helper *utils.MessageHelper) {
-	chatIdStr := helper.ChatIdStr()
-	chatCfg := h.PeonService.GetChatConfig(chatIdStr, helper.Chat.Title)
+	chatId := helper.ChatId()
+	chatCfg := h.PeonService.GetChatConfig(chatId, helper.Chat.Title)
 
 	// Check group is avaliable.
 	if !chatCfg.IsAvaliable() {
@@ -29,38 +28,38 @@ func (h *CommandMap) handleSetLevelCmd(helper *utils.MessageHelper) {
 	}
 
 	// Check sender permission.
-	userIdStr := helper.UserIdStr()
-	isAllowListUser := h.PeonService.IsAllowListUser(userIdStr)
-	isAdminstrator := chatCfg.IsAdminstrator(userIdStr)
+	userId := helper.UserId()
+	isAllowListUser := h.PeonService.IsAllowListUser(userId)
+	isAdminstrator := chatCfg.IsAdminstrator(userId)
 	if !isAdminstrator && !isAllowListUser {
 		return
 	}
 
-	targetIdStr := strconv.Itoa(int(helper.ReplyToMessage.From.ID))
 	replyMsg := helper.ReplyToMessage
 	targetName := replyMsg.From.FirstName + " " + replyMsg.From.LastName
 	query := models.MessageRecord{
-		UserId:   targetIdStr,
+		MemberId: replyMsg.From.ID,
 		FullName: targetName,
 	}
 	// set memberlevel & save
-	userRecord := h.RecordService.GetUserRecord(chatIdStr, &query)
+	userRecord := h.RecordService.GetUserRecord(chatId, &query)
 	userRecord.MemberLevel = level
 	userRecord.FullName = targetName
 
-	err := h.RecordService.SetUserRecordCache(chatIdStr, userRecord)
+	err := h.RecordService.SetUserRecordCache(chatId, userRecord)
 	if err != nil {
 		logger.Errorf("Set member %s level err: %s", targetName, err.Error())
 		return
 	}
 
-	err = h.RecordService.SetUserRecordDB(chatIdStr, userRecord)
+	err = h.RecordService.SetUserRecordDB(chatId, userRecord)
 	if err != nil {
 		logger.Errorf("Set member %s level err: %s", targetName, err.Error())
 		return
 	}
 
-	err = h.BotService.SetPermission(helper.ChatId(), replyMsg.From.ID, level, 0)
+	targetId := replyMsg.From.ID
+	err = h.BotService.SetPermission(helper.ChatId(), targetId, level, 0)
 	if err != nil {
 		logger.Errorf("Set member %s level err: %s", targetName, err.Error())
 		return
@@ -71,7 +70,7 @@ func (h *CommandMap) handleSetLevelCmd(helper *utils.MessageHelper) {
 	msgText := fmt.Sprintf(
 		config.GetTextLang().TipsSetPermissionCmd,
 		targetName,
-		targetIdStr,
+		targetId,
 		levelText,
 	)
 	newMsg := tgbotapi.NewMessage(helper.ChatId(), msgText)

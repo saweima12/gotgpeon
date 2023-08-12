@@ -6,28 +6,27 @@ import (
 	"gorm.io/gorm"
 )
 
-type PeonBehaviorRecord struct {
+type PeonChatMemberRecord struct {
 	ID          uint      `gorm:"primarykey"`
-	ChatId      string    `gorm:"column:chat_id; type:varchar(40); index:idx_member,priority:1,unique"`
-	UserId      string    `gorm:"column:user_id; type:varchar(40); index:idx_member,priority:2,unique"`
-	FullName    string    `gorm:"column:full_name; type:text"`
+	ChatId      int64     `gorm:"column:chat_id; index:chatid_memberid_index,priority:1,unique"`
+	MemberId    int64     `gorm:"column:member_id; index:chatid_memberid_index,priority:2,unique"`
 	MsgCount    int       `gorm:"column:msg_count; type:int4"`
 	MemberLevel int       `gorm:"column:member_level; type:int2"`
-	UpdateTime  time.Time `gorm:"column:update_time"`
-	CreatedTime time.Time `gorm:"column:created_time"`
+	UpdateTime  time.Time `gorm:"column:update_time; type:timestamptz"`
+	CreatedTime time.Time `gorm:"column:created_time; type:timestamptz"`
 }
 
-func (PeonBehaviorRecord) TableName() string {
-	return "peon_behavior_record"
+func (PeonChatMemberRecord) TableName() string {
+	return "peon_chat_member_record"
 }
 
-func (m *PeonBehaviorRecord) BeforeCreate(tx *gorm.DB) (err error) {
-	m.CreatedTime = time.Now()
-	m.UpdateTime = time.Now()
+func (m *PeonChatMemberRecord) BeforeCreate(tx *gorm.DB) (err error) {
+	m.CreatedTime = time.Now().UTC()
+	m.UpdateTime = time.Now().UTC()
 	return nil
 }
 
-func (m *PeonBehaviorRecord) BeforeUpdate(tx *gorm.DB) (err error) {
-	m.UpdateTime = time.Now()
+func (m *PeonChatMemberRecord) BeforeUpdate(tx *gorm.DB) (err error) {
+	m.UpdateTime = time.Now().UTC()
 	return nil
 }

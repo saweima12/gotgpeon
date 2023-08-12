@@ -1,8 +1,8 @@
 package sliceutil
 
-func Contains(str string, s []string) bool {
+func Contains[T int | int64 | string](t1 T, s []T) bool {
 	for _, v := range s {
-		if v == str {
+		if v == t1 {
 			return true
 		}
 	}

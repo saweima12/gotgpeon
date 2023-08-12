@@ -13,8 +13,8 @@ import (
 func (h *CommandMap) handlePointCmd(helper *utils.MessageHelper) {
 
 	// Define parameter
-	chatIdStr := helper.ChatIdStr()
-	chatCfg := h.PeonService.GetChatConfig(chatIdStr, helper.Chat.Title)
+	chatId := helper.ChatId()
+	chatCfg := h.PeonService.GetChatConfig(chatId, helper.Chat.Title)
 
 	// Check group is avaliable.
 	if !chatCfg.IsAvaliable() {
@@ -22,11 +22,11 @@ func (h *CommandMap) handlePointCmd(helper *utils.MessageHelper) {
 	}
 
 	query := &models.MessageRecord{
-		UserId:   helper.UserIdStr(),
+		MemberId: helper.UserId(),
 		FullName: helper.FullName(),
 	}
 	// Create tips message.
-	userRecord := h.RecordService.GetUserRecord(chatIdStr, query)
+	userRecord := h.RecordService.GetUserRecord(chatId, query)
 
 	text := "Point: " + strconv.Itoa(userRecord.Point)
 	newMsg := tgbotapi.NewMessage(helper.ChatId(), text)

@@ -1,19 +1,28 @@
 package entity
 
 import (
+	"time"
+
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type PeonChatConfig struct {
 	ID             uint           `gorm:"primarykey"`
-	ChatId         string         `gorm:"chat_id, type:varchar(40)"`
-	Status         string         `gorm:"status"`
+	ChatId         int64          `gorm:"chat_id; index:chatid_un,unique"`
+	Status         int            `gorm:"status; type:int2"`
 	ChatName       string         `gorm:"chat_name"`
 	ConfigJson     datatypes.JSON `gorm:"config_json"`
 	PermissionJson datatypes.JSON `gorm:"permission_json"`
 	AttachJson     datatypes.JSON `gorm:"attach_json"`
+	CreatedDate    time.Time      `gorm:"created_date; type:timestamptz"`
 }
 
 func (PeonChatConfig) TableName() string {
-	return "peon_chat_config"
+	return "peon_chat_conf"
+}
+
+func (m *PeonChatConfig) BeforeCreate(tx *gorm.DB) (err error) {
+	m.CreatedDate = time.Now().UTC()
+	return nil
 }

@@ -16,6 +16,7 @@ func InitOpenCC() error {
 		logger.Error("OpenCC intialize error: " + err.Error())
 		return err
 	}
+
 	return nil
 }
 

@@ -1,17 +1,19 @@
 package entity
 
 import (
+	"time"
+
 	"gorm.io/datatypes"
 )
 
 type PeonSavedMessage struct {
 	ID          uint           `gorm:"primarykey"`
-	ChatId      string         `gorm:"chat_id"`
-	MessageId   string         `gorm:"message_id"`
+	ChatId      int64          `gorm:"chat_id"`
+	MemberId    int64          `gorm:"member_id"`
 	MessageJson datatypes.JSON `gorm:"message_json"`
-	RecordDate  datatypes.Time `gorm:"record_date"`
+	RecordDate  time.Time      `gorm:"record_date; type:timestamptz"`
 }
 
 func (PeonSavedMessage) TableName() string {
-	return "peon_saved_message"
+	return "peon_saved_msg"
 }

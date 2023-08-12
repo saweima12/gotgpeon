@@ -2,8 +2,8 @@ package repositories
 
 import (
 	"gotgpeon/logger"
-	"gotgpeon/models"
 	"gotgpeon/models/entity"
+	"strconv"
 
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -11,9 +11,9 @@ import (
 )
 
 type BotConfigRepository interface {
-	GetWhiteList() map[string]byte
-	SetWhiteListCache(whitelistSet map[string]byte) error
-	SetWhiteListDBWithUserId(userId string, isEnable byte) error
+	GetWhiteList() map[int64]byte
+	SetWhiteListCache(whitelistSet map[int64]byte) error
+	SetWhiteListDBWithUserId(userId int64, isEnable byte) error
 }
 
 type botConfigRepository struct {
@@ -26,26 +26,30 @@ func NewBotConfigRepo(dbConn *gorm.DB, redisConn *redis.Client) BotConfigReposit
 	}
 }
 
-func (repo *botConfigRepository) GetWhiteList() map[string]byte {
+func (repo *botConfigRepository) GetWhiteList() map[int64]byte {
 	namespace := getNamespace("whitelist")
-	result := make(map[string]byte)
+	result := make(map[int64]byte)
 	// Attempt read from cache.
 	rdb := repo.GetRedis()
 	resp, err := rdb.SMembers(baseCtx, namespace).Result()
 	if err == nil && len(resp) > 0 {
 		// Generate result.
 		for _, v := range resp {
-			result[v] = 1
+			kV, err := strconv.Atoi(v)
+			if err != nil {
+				continue
+			}
+			result[int64(kV)] = 1
 		}
 		return result
 	}
 
 	// Data doesn't exist in the cache. Attempt read from database.
-	tableName := entity.PeonUserWhitelist{}.TableName()
-	var rows []entity.PeonUserWhitelist
+	tableName := entity.PeonMemberAllowlist{}.TableName()
+	var rows []entity.PeonMemberAllowlist
 
 	// Read from database.
-	err = repo.GetDB().Table(tableName).Where("status = ?", "ok").Find(&rows).Error
+	err = repo.GetDB().Table(tableName).Where("status = ?", 1).Find(&rows).Error
 	if err != nil {
 		logger.Error("Bot GetWhitelist Err:" + err.Error())
 		return result
@@ -53,8 +57,8 @@ func (repo *botConfigRepository) GetWhiteList() map[string]byte {
 
 	// Generate Result.
 	for _, v := range rows {
-		if v.Status == "ok" {
-			result[v.UserId] = 1
+		if v.Status == 1 {
+			result[v.MemberId] = 1
 		}
 	}
 
@@ -63,7 +67,7 @@ func (repo *botConfigRepository) GetWhiteList() map[string]byte {
 	return result
 }
 
-func (repo *botConfigRepository) SetWhiteListCache(whitelistSet map[string]byte) error {
+func (repo *botConfigRepository) SetWhiteListCache(whitelistSet map[int64]byte) error {
 	namespace := getNamespace("whitelist")
 
 	// Convert mapKey to interface slice.
@@ -83,16 +87,11 @@ func (repo *botConfigRepository) SetWhiteListCache(whitelistSet map[string]byte)
 	return nil
 }
 
-func (repo *botConfigRepository) SetWhiteListDBWithUserId(userId string, isEnable byte) error {
+func (repo *botConfigRepository) SetWhiteListDBWithUserId(memberId int64, isEnable byte) error {
 
-	isOK := models.OK
-	if isEnable != 1 {
-		isOK = models.NG
-	}
-
-	value := entity.PeonUserWhitelist{
-		UserId: userId,
-		Status: isOK,
+	value := entity.PeonMemberAllowlist{
+		MemberId: int64(memberId),
+		Status:   int8(isEnable),
 	}
 
 	err := repo.GetDB().Clauses(clause.OnConflict{
@@ -115,19 +114,19 @@ func (botconfigrepositroy *botConfigRepository) SetViolateCache(chatId string, u
 	panic("not implemented") // TODO: Implement
 }
 
-/// ====
-/// Support Function
-/// ====
-func sliceToMapSet(slice []string) map[string]string {
-	var result map[string]string
+// / ====
+// / Support Function
+// / ====
+func sliceToMapSet[T int | int64 | string](slice []T) map[T]byte {
+	var result map[T]byte
 	for _, v := range slice {
-		result[v] = "ok"
+		result[v] = 1
 	}
 	return result
 }
 
-func mapKeyToSlice(m map[string]byte) []string {
-	result := []string{}
+func mapKeyToSlice[T int | int64 | string](m map[T]byte) []T {
+	result := []T{}
 	for k := range m {
 		result = append(result, k)
 	}

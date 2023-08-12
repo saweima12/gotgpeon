@@ -33,9 +33,10 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client, botAPI *tgbotap
 	chatRepo := repositories.NewChatRepo(dbConn, cacheConn)
 	botRepo := repositories.NewBotConfigRepo(dbConn, cacheConn)
 	recordRepo := repositories.NewRecordRepository(dbConn, cacheConn)
+	deletedMsgRepo := repositories.NewDeletedMsgRepository(dbConn, cacheConn)
 
 	// Initialize Services
-	peonService := services.NewPeonService(chatRepo, botRepo)
+	peonService := services.NewPeonService(chatRepo, botRepo, deletedMsgRepo)
 	recordService := services.NewRecordService(recordRepo)
 	botService := services.NewBotService(botAPI)
 
@@ -82,15 +83,15 @@ func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.
 
 func (h *messageHandler) getMessageContext(helper *utils.MessageHelper, chatCfg *models.ChatConfig) *models.MessageContext {
 
-	chatId := helper.ChatIdStr()
-	userId := helper.UserIdStr()
+	chatId := helper.ChatId()
+	userId := helper.UserId()
 
 	// Check userid in the allowList.
 	isAllowlist := h.peonService.IsAllowListUser(userId)
 
 	// Query UserRecord.
 	recordQuery := &models.MessageRecord{
-		UserId:   userId,
+		MemberId: userId,
 		FullName: helper.FullName(),
 	}
 	userRecord := h.recordService.GetUserRecord(chatId, recordQuery)

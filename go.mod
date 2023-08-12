@@ -3,6 +3,7 @@ module gotgpeon
 go 1.20
 
 require (
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/jhunters/timewheel v1.1.0
@@ -19,7 +20,6 @@ require (
 
 require (
 	github.com/adamzy/cedar-go v0.0.0-20170805034717-80a9c64b256d // indirect
-	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
@@ -47,6 +47,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/robfig/cron/v3 v3.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect

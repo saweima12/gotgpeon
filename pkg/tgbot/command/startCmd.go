@@ -6,8 +6,6 @@ import (
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/utils"
-	"strconv"
-	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -15,7 +13,7 @@ import (
 // Handle /start command
 func (h *CommandMap) handleStartCmd(helper *utils.MessageHelper) {
 	// Check user is allowlist user..
-	if !h.PeonService.IsAllowListUser(helper.UserIdStr()) {
+	if !h.PeonService.IsAllowListUser(helper.UserId()) {
 		return
 	}
 
@@ -29,19 +27,15 @@ func (h *CommandMap) handleStartCmd(helper *utils.MessageHelper) {
 		return
 	}
 
-	strAdminstratorIds := make([]string, 0, len(chatAdminstrator))
+	strAdminstratorIds := make([]int64, 0, len(chatAdminstrator))
 	// process user id
-	for index, user := range chatAdminstrator {
-		fmt.Println(index)
-		userId := strconv.Itoa(int(user.User.ID))
-		if strings.Trim(userId, " ") == "" {
-			continue
-		}
+	for _, user := range chatAdminstrator {
+		userId := user.User.ID
 		strAdminstratorIds = append(strAdminstratorIds, userId)
 	}
 	// save to database and cache
-	chatIdStr := helper.ChatIdStr()
-	chatCfg := h.PeonService.GetChatConfig(chatIdStr, helper.Chat.Title)
+	chatId := helper.ChatId()
+	chatCfg := h.PeonService.GetChatConfig(chatId, helper.Chat.Title)
 	chatCfg.Status = models.OK
 	chatCfg.Adminstrators = strAdminstratorIds
 
