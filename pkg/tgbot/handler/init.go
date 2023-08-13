@@ -82,7 +82,6 @@ func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.
 }
 
 func (h *messageHandler) getMessageContext(helper *utils.MessageHelper, chatCfg *models.ChatConfig) *models.MessageContext {
-
 	chatId := helper.ChatId()
 	userId := helper.UserId()
 
@@ -96,7 +95,7 @@ func (h *messageHandler) getMessageContext(helper *utils.MessageHelper, chatCfg 
 	}
 	userRecord := h.recordService.GetUserRecord(chatId, recordQuery)
 
-	// ServiceConfig.
+	// Get serviceConfig.
 	commonCfg := config.GetConfig().Common
 
 	return &models.MessageContext{

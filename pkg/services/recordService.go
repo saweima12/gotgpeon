@@ -21,17 +21,24 @@ func NewRecordService(recordRepo repositories.RecordRepository) RecordService {
 	}
 }
 
-func (s recordService) GetUserRecord(chatId int64, query *models.MessageRecord) *models.MessageRecord {
+func (s *recordService) GetAllUserRecord(chatId int64) map[int64]*models.MessageRecord {
+
+	return nil
+}
+
+func (s *recordService) GetUserRecord(chatId int64, query *models.MessageRecord) *models.MessageRecord {
 	record, err := s.RecordRepo.GetUserRecord(chatId, query)
 
 	if err != nil {
-		return models.NewMessageRecord(query.MemberId, query.FullName)
+		record = models.NewMessageRecord(query.MemberId, query.FullName)
 	}
+	// overwirte fullname to latest.
+	record.FullName = query.FullName
 
 	return record
 }
 
-func (s recordService) SetUserRecordCache(chatId int64, data *models.MessageRecord) error {
+func (s *recordService) SetUserRecordCache(chatId int64, data *models.MessageRecord) error {
 	err := s.RecordRepo.SetUserRecordCache(chatId, data)
 	if err != nil {
 		return err
@@ -40,7 +47,7 @@ func (s recordService) SetUserRecordCache(chatId int64, data *models.MessageReco
 	return nil
 }
 
-func (s recordService) SetUserRecordDB(chatId int64, data *models.MessageRecord) error {
+func (s *recordService) SetUserRecordDB(chatId int64, data *models.MessageRecord) error {
 	err := s.RecordRepo.SetUserRecordDB(chatId, data)
 	if err != nil {
 		return err

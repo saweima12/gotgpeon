@@ -7,7 +7,7 @@ type MessageRecord struct {
 	FullName    string    `json:"user_name"`
 	Point       int       `json:"point"`
 	MemberLevel int       `json:"member_level"`
-	CreatedTime time.Time `json:"created_time"`
+	CreatedDate time.Time `json:"created_date"`
 }
 
 func NewMessageRecord(userId int64, fullName string) *MessageRecord {
@@ -16,6 +16,6 @@ func NewMessageRecord(userId int64, fullName string) *MessageRecord {
 		FullName:    fullName,
 		Point:       0,
 		MemberLevel: 0,
-		CreatedTime: time.Now(),
+		CreatedDate: time.Now().UTC(),
 	}
 }

@@ -8,18 +8,19 @@ import (
 )
 
 type PeonChatConfig struct {
-	ID             uint           `gorm:"primarykey"`
-	ChatId         int64          `gorm:"chat_id; index:chatid_un,unique"`
-	Status         int            `gorm:"status; type:int2"`
-	ChatName       string         `gorm:"chat_name"`
-	ConfigJson     datatypes.JSON `gorm:"config_json"`
-	PermissionJson datatypes.JSON `gorm:"permission_json"`
-	AttachJson     datatypes.JSON `gorm:"attach_json"`
-	CreatedDate    time.Time      `gorm:"created_date; type:timestamptz"`
+	ID               uint           `gorm:"primarykey"`
+	ChatId           int64          `gorm:"chat_id; index:chatid_un,unique"`
+	Status           int            `gorm:"status; type:int2"`
+	ChatName         string         `gorm:"chat_name"`
+	Config           datatypes.JSON `gorm:"config"`
+	JobConfig        datatypes.JSON `gorm:"job_conifg"`
+	PermissionConifg datatypes.JSON `gorm:"permission_config"`
+	AttachJson       datatypes.JSON `gorm:"attach_json"`
+	CreatedDate      time.Time      `gorm:"created_date; type:timestamptz"`
 }
 
 func (PeonChatConfig) TableName() string {
-	return "peon_chat_conf"
+	return "peon_chat_cfg"
 }
 
 func (m *PeonChatConfig) BeforeCreate(tx *gorm.DB) (err error) {

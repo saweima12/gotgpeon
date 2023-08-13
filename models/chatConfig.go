@@ -8,33 +8,26 @@ type CheckerConfig struct {
 }
 
 type ChatConfig struct {
-	Status           int             `json:"status"`
-	ChatId           int64           `json:"chat_id"`
-	ChatName         string          `json:"chat_name"`
-	SeniorCount      int             `json:"senior_count"`
-	JuniorDay        int             `json:"junior_day"`
-	SeniorDay        int             `json:"senior_day"`
-	CheckLowestCount int             `json:"check_lowest_count"`
-	Adminstrators    []int64         `json:"adminstrators"`
-	CheckerList      []CheckerConfig `json:"checker_config"`
+	Status        int             `json:"status"`
+	ChatId        int64           `json:"chat_id"`
+	ChatName      string          `json:"chat_name"`
+	Adminstrators []int64         `json:"adminstrators"`
+	CheckerList   []CheckerConfig `json:"checker_config"`
 }
 
 func NewDefaultChatConfig(chatId int64, chatName string, adminstrators []int64) *ChatConfig {
 	return &ChatConfig{
-		Status:           NG,
-		ChatId:           chatId,
-		ChatName:         chatName,
-		SeniorCount:      300,
-		JuniorDay:        7,
-		SeniorDay:        60,
-		CheckLowestCount: 20,
-		Adminstrators:    adminstrators,
+		Status:        NG,
+		ChatId:        chatId,
+		ChatName:      chatName,
+		Adminstrators: adminstrators,
 		CheckerList: []CheckerConfig{
-			{Name: "type"},
-			{Name: "entities"},
-			{Name: "viabot"},
-			{Name: "username"},
-			{Name: "content"},
+			{Name: "Type"},
+			{Name: "Forward"},
+			{Name: "Entities"},
+			{Name: "Viabot"},
+			{Name: "SpchName"},
+			{Name: "SpchContent"},
 		},
 	}
 }

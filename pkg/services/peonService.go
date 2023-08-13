@@ -79,7 +79,7 @@ func (s *peonService) InsertDeletedRecord(chatId int64, contentType string, mess
 }
 
 func (s *peonService) GetBotAllowlist() map[int64]byte {
-	return s.botRepo.GetWhiteList()
+	return s.botRepo.GetAllowlist()
 }
 
 func (s *peonService) IsAllowListUser(userId int64) bool {

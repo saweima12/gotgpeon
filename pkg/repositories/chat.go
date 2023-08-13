@@ -14,7 +14,7 @@ import (
 )
 
 type ChatRepository interface {
-	GetAvaliableChatIds() []string
+	GetAvaliableChatIds() []int64
 	GetChatConfig(chatId int64) (*models.ChatConfig, error)
 	SetConfigCache(chatId int64, value *models.ChatConfig) error
 	SetConfigDb(chatId int64, value *models.ChatConfig) error
@@ -32,8 +32,8 @@ func NewChatRepo(dbConn *gorm.DB, redisConn *redis.Client) ChatRepository {
 	}
 }
 
-func (repo *chatRepository) GetAvaliableChatIds() []string {
-	var result []string
+func (repo *chatRepository) GetAvaliableChatIds() []int64 {
+	var result []int64
 
 	query := entity.PeonChatConfig{}
 	err := repo.GetDB().Table(query.TableName()).
@@ -75,7 +75,7 @@ func (repo *chatRepository) GetChatConfig(chatId int64) (*models.ChatConfig, err
 		return nil, err
 	}
 
-	err = json.Unmarshal(configEntity.ConfigJson, &result)
+	err = json.Unmarshal(configEntity.Config, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,6 @@ func (repo *chatRepository) SetConfigCache(chatId int64, value *models.ChatConfi
 }
 
 func (repo *chatRepository) SetConfigDb(chatId int64, value *models.ChatConfig) error {
-
 	// process parameter.
 	bytes, err := json.Marshal(value)
 	if err != nil {
@@ -111,15 +110,15 @@ func (repo *chatRepository) SetConfigDb(chatId int64, value *models.ChatConfig) 
 	}
 
 	entityCfg := entity.PeonChatConfig{
-		ChatId:     chatId,
-		Status:     value.Status,
-		ChatName:   value.ChatName,
-		ConfigJson: bytes,
+		ChatId:   chatId,
+		Status:   value.Status,
+		ChatName: value.ChatName,
+		Config:   bytes,
 	}
 
 	err = repo.GetDB().Model(&entityCfg).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "chat_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"status", "chat_name", "config_json"}),
+		DoUpdates: clause.AssignmentColumns([]string{"status", "chat_name", "config"}),
 	}).Create(&entityCfg).Error
 
 	if err != nil {

@@ -17,6 +17,7 @@ import (
 )
 
 type RecordRepository interface {
+	GetAllUserRecordCache(chatId int64) (result map[int64]*models.MessageRecord, err error)
 	GetUserRecord(chatId int64, query *models.MessageRecord) (result *models.MessageRecord, err error)
 	GetAllCacheRecord(chatId int64) (result []models.MessageRecord, err error)
 	SetUserRecordCache(chatId int64, record *models.MessageRecord) error
@@ -31,6 +32,33 @@ func NewRecordRepository(dbConn *gorm.DB, cacheConn *redis.Client) RecordReposit
 	return &recordRepository{
 		BaseRepository: BaseRepository{DbConn: dbConn, RedisConn: cacheConn},
 	}
+}
+
+func (repo *recordRepository) GetAllUserRecordCache(chatId int64) (result map[int64]*models.MessageRecord, err error) {
+	rdb := repo.GetRedis()
+	namespace := getRecordNamespace(chatId)
+
+	result = make(map[int64]*models.MessageRecord)
+
+	resp, err := rdb.HGetAll(baseCtx, namespace).Result()
+	if err != nil {
+		logger.Errorf("GetAllUserRecordCache err: %s", err.Error())
+		return nil, err
+	}
+	for k, v := range resp {
+		memberId, err := strconv.Atoi(k)
+		memberId64 := int64(memberId)
+
+		memberRecord := &models.MessageRecord{}
+		err = jsonutil.UnmarshalFromString(v, memberRecord)
+		if err != nil {
+			logger.Errorf("GetAllUserRecordCache Unmarshal err: %s", err.Error())
+			continue
+		}
+		result[memberId64] = memberRecord
+	}
+
+	return result, nil
 }
 
 func (repo *recordRepository) GetUserRecord(chatId int64, query *models.MessageRecord) (result *models.MessageRecord, err error) {
