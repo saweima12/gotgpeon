@@ -1,14 +1,18 @@
 package services
 
 import (
+	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/repositories"
+	"strconv"
 )
 
 type RecordService interface {
+	GetAllUserRecord(chatId int64) map[int64]*models.MessageRecord
 	GetUserRecord(chatId int64, query *models.MessageRecord) *models.MessageRecord
 	SetUserRecordCache(chatId int64, record *models.MessageRecord) error
 	SetUserRecordDB(chatId int64, record *models.MessageRecord) error
+	DelCacheByMemberIds(chatId int64, memberIdList []int64) error
 }
 
 type recordService struct {
@@ -22,8 +26,12 @@ func NewRecordService(recordRepo repositories.RecordRepository) RecordService {
 }
 
 func (s *recordService) GetAllUserRecord(chatId int64) map[int64]*models.MessageRecord {
-
-	return nil
+	records, err := s.RecordRepo.GetAllUserRecordCache(chatId)
+	if err != nil {
+		logger.Errorf("GetAllUserRecord err: %s", err.Error())
+		return nil
+	}
+	return records
 }
 
 func (s *recordService) GetUserRecord(chatId int64, query *models.MessageRecord) *models.MessageRecord {
@@ -53,5 +61,19 @@ func (s *recordService) SetUserRecordDB(chatId int64, data *models.MessageRecord
 		return err
 	}
 
+	return nil
+}
+
+func (s *recordService) DelCacheByMemberIds(chatId int64, memberIdList []int64) error {
+	strIds := make([]string, len(memberIdList))
+	for _, id := range memberIdList {
+		idStr := strconv.Itoa(int(id))
+		strIds = append(strIds, idStr)
+	}
+
+	err := s.RecordRepo.DelCacheByMemberIds(chatId, strIds)
+	if err != nil {
+		return err
+	}
 	return nil
 }

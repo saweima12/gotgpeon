@@ -1,5 +1,5 @@
 package timewheel
 
-type Delayable interface {
+type Runnable interface {
 	Run()
 }

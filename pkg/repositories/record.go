@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -19,9 +18,9 @@ import (
 type RecordRepository interface {
 	GetAllUserRecordCache(chatId int64) (result map[int64]*models.MessageRecord, err error)
 	GetUserRecord(chatId int64, query *models.MessageRecord) (result *models.MessageRecord, err error)
-	GetAllCacheRecord(chatId int64) (result []models.MessageRecord, err error)
 	SetUserRecordCache(chatId int64, record *models.MessageRecord) error
 	SetUserRecordDB(chatId int64, record *models.MessageRecord) error
+	DelCacheByMemberIds(chatId int64, memberIdList []string) error
 }
 
 type recordRepository struct {
@@ -36,7 +35,7 @@ func NewRecordRepository(dbConn *gorm.DB, cacheConn *redis.Client) RecordReposit
 
 func (repo *recordRepository) GetAllUserRecordCache(chatId int64) (result map[int64]*models.MessageRecord, err error) {
 	rdb := repo.GetRedis()
-	namespace := getRecordNamespace(chatId)
+	namespace := repo.getRecordNamespace(chatId)
 
 	result = make(map[int64]*models.MessageRecord)
 
@@ -64,14 +63,14 @@ func (repo *recordRepository) GetAllUserRecordCache(chatId int64) (result map[in
 func (repo *recordRepository) GetUserRecord(chatId int64, query *models.MessageRecord) (result *models.MessageRecord, err error) {
 	rdb := repo.GetRedis()
 	// Get chat's point cache.
-	namespace := getRecordNamespace(chatId)
+	namespace := repo.getRecordNamespace(chatId)
 
 	// Get Record struct
 	fieldKey := strconv.Itoa(int(query.MemberId))
 	resp, err := rdb.HGet(baseCtx, namespace, fieldKey).Bytes()
-	if err == nil {
+	if err == nil && len(resp) > 0 {
 		// Cache has user's record.
-		err := json.Unmarshal(resp, &result)
+		err = json.Unmarshal(resp, &result)
 		if err != nil {
 			logger.Errorf("GetUserRecord Unmarshal err: %s", err.Error())
 			return nil, err
@@ -85,36 +84,18 @@ func (repo *recordRepository) GetUserRecord(chatId int64, query *models.MessageR
 	err = db.Where("member_id = ? AND chat_id = ?", query.MemberId, chatId).
 		Take(&entity).Error
 	if err != nil {
+		logger.Errorf(err.Error())
 		if !errors.Is(gorm.ErrRecordNotFound, err) {
 			logger.Errorf("GetUserRecord query db err: %v", err)
 		}
 		return nil, err
 	}
 
-	return result, nil
-}
-
-func (repo *recordRepository) GetAllCacheRecord(chatId int64) (result []models.MessageRecord, err error) {
-	// declare parameter
-	result = make([]models.MessageRecord, 0)
-	namespace := getRecordNamespace(chatId)
-
-	resp, err := repo.GetRedis().HGetAll(context.Background(), namespace).Result()
-	if err != nil {
-		logger.Errorf("GetAllCacheRecord err: %s", err.Error())
-		return nil, err
-	}
-
-	for _, value := range resp {
-		tempRecord := models.MessageRecord{}
-		err = jsonutil.UnmarshalFromString(value, &tempRecord)
-
-		if err != nil {
-			logger.Errorf("GetAllCacheRecord Unmarshal err: %s", err.Error())
-			return nil, err
-		}
-
-		result = append(result, tempRecord)
+	result = &models.MessageRecord{
+		MemberId:    entity.MemberId,
+		CreatedDate: entity.CreatedTime,
+		Point:       entity.MsgCount,
+		MemberLevel: entity.MemberLevel,
 	}
 	return result, nil
 }
@@ -123,7 +104,7 @@ func (repo *recordRepository) SetUserRecordCache(chatId int64, record *models.Me
 	rdb := repo.GetRedis()
 
 	// Marshal to byte
-	nameSpace := getRecordNamespace(chatId)
+	nameSpace := repo.getRecordNamespace(chatId)
 	byte, err := jsonutil.Marshal(record)
 	if err != nil {
 		logger.Errorf("SetUserRecordCache Marshal err: %s", err.Error())
@@ -154,8 +135,8 @@ func (repo *recordRepository) SetUserRecordDB(chatId int64, record *models.Messa
 	}
 
 	err := repo.GetDB().Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "chat_id"}, {Name: "user_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"msg_count", "full_name"}),
+		Columns:   []clause.Column{{Name: "chat_id"}, {Name: "member_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"msg_count"}),
 	}).Create(&schema).Error
 	if err != nil {
 		logger.Errorf("SetUserRecordDB err:", err.Error())
@@ -165,6 +146,16 @@ func (repo *recordRepository) SetUserRecordDB(chatId int64, record *models.Messa
 	return nil
 }
 
-func getRecordNamespace(chatId int64) string {
+func (repo *recordRepository) DelCacheByMemberIds(chatId int64, memberIds []string) error {
+	namespace := repo.getRecordNamespace(chatId)
+	err := repo.GetRedis().HDel(baseCtx, namespace, memberIds...).Err()
+	if err != nil {
+		logger.Errorf("DelCacheByMemberIds err: %s", err.Error())
+		return err
+	}
+	return nil
+}
+
+func (repo *recordRepository) getRecordNamespace(chatId int64) string {
 	return fmt.Sprintf("%d:record_point", chatId)
 }

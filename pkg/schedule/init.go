@@ -41,11 +41,16 @@ func NewPeonSchedule(botAPI *tgbotapi.BotAPI) (PeonSchedule, error) {
 
 	// Startup job.
 	sch.CacheAdminstrator()
+	sch.CacheToDB()
 
 	// Add Job
-	croniter.AddFunc("0 30 * * * *", sch.CacheAdminstrator)
-	croniter.AddFunc("0 17 * * * *", sch.CacheToDB)
 	return sch, nil
+}
+
+func (s *peonSchedule) RegisterJob() {
+	s.Croniter.AddFunc("0 30 * * * *", s.CacheAdminstrator)
+	s.Croniter.AddFunc("0 17 * * * *", s.CacheToDB)
+
 }
 
 func (s *peonSchedule) Run() {

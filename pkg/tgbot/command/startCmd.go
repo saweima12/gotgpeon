@@ -30,18 +30,29 @@ func (h *CommandMap) handleStartCmd(helper *utils.MessageHelper) {
 	strAdminstratorIds := make([]int64, 0, len(chatAdminstrator))
 	// process user id
 	for _, user := range chatAdminstrator {
+		if user.User.IsBot {
+			continue
+		}
+
 		userId := user.User.ID
 		strAdminstratorIds = append(strAdminstratorIds, userId)
 	}
-	// save to database and cache
+	// save to cache
 	chatId := helper.ChatId()
-	chatCfg := h.PeonService.GetChatConfig(chatId, helper.Chat.Title)
+	chatCfg := h.PeonService.GetChatConfig(chatId)
 	chatCfg.Status = models.OK
 	chatCfg.Adminstrators = strAdminstratorIds
+	chatCfg.ChatName = helper.Chat.Title
 
 	err = h.PeonService.SetChatConfig(chatCfg)
 	if err != nil {
 		logger.Errorf("Register ChatGroup SetConfig error: %s", err.Error())
+		return
+	}
+
+	err = h.PeonService.UpdateChatConfigDB(chatId)
+	if err != nil {
+		logger.Errorf("Register ChatGroup UpdateChatConfigDB error: %s", err.Error())
 		return
 	}
 

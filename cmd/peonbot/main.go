@@ -2,12 +2,12 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"gotgpeon/config"
 	"gotgpeon/db"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot"
+	"gotgpeon/utils"
 	"gotgpeon/utils/goccutil"
 	"gotgpeon/utils/poolutil"
 	"gotgpeon/utils/timewheel"
@@ -52,6 +52,7 @@ func main() {
 
 	// Initialize ants pool.
 	err = poolutil.Init()
+
 	if err != nil {
 		panic("Initialize goroutine pool err" + err.Error())
 	}
@@ -73,24 +74,29 @@ func main() {
 	// Add Webhook route and launche update process.
 	if cfg.Common.Mode == "webhook" {
 		client = tgbot.StartWebhookProcess(cfg.TgBot.BotToken, botClient)
-		fmt.Println("UpdateMode: Webhook")
+		logger.Info("UpdateMode: Webhook")
 	} else {
 		client = tgbot.StartLongPollProcess(botClient)
-		fmt.Println("UpdateMode: LongPoll")
+		logger.Info("UpdateMode: LongPoll")
 	}
-
 	// When shutdown timing, close the UpdateProcess
 	defer client.Stop()
 
 	// Initialize opencc
 	goccutil.InitOpenCC()
-
 	logger.Info("Initialize finished.")
 
-	// Start a http server for listen update
-	err = http.ListenAndServe(":"+cfg.Common.ListenPort, nil)
-	if err != nil {
-		logger.Error("Listen hook err" + err.Error())
-	}
+	// handle signal
+	c := utils.HandleSingal()
 
+	// Start a http server for listen update
+	go func() {
+		err = http.ListenAndServe(":"+cfg.Common.ListenPort, nil)
+		if err != nil {
+			logger.Error("Listen hook err" + err.Error())
+		}
+	}()
+
+	<-c
+	logger.Info("Service shutdown...")
 }

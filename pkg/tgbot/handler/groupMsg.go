@@ -17,7 +17,7 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 
 	chatId := helper.ChatId()
 	// Check chat is avaliable
-	chatCfg := h.peonService.GetChatConfig(chatId, helper.Chat.Title)
+	chatCfg := h.peonService.GetChatConfig(chatId)
 
 	// check group is avaliable.
 	if chatCfg.Status != models.OK {

@@ -1,7 +1,7 @@
 package models
 
 type ChatJobConfig struct {
-	SeniorCount      uint
+	JuniorLowest     uint
 	JuniorDay        uint
 	SeniorDay        uint
 	CheckLowestCount uint
@@ -9,7 +9,7 @@ type ChatJobConfig struct {
 
 func NewDefaultChatJobConfig() *ChatJobConfig {
 	return &ChatJobConfig{
-		SeniorCount:      300,
+		JuniorLowest:     300,
 		JuniorDay:        7,
 		SeniorDay:        90,
 		CheckLowestCount: 20,

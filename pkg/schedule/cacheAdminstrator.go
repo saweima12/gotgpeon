@@ -36,14 +36,24 @@ func (s *peonSchedule) CacheAdminstrator() {
 			memberIdNameMap[memberId] = memberName
 		}
 
+		chatInfo, err := s.BotAPI.GetChat(tgbotapi.ChatInfoConfig{
+			ChatConfig: tgbotapi.ChatConfig{ChatID: chatId},
+		})
+
+		if err != nil {
+			logger.Errorf("CacheAdminstrator err: %s || ChatId: %s", err.Error(), chatId)
+			continue
+		}
+
 		// Update chatConfig.
-		chatCfg, err := s.ChatRepo.GetChatConfig(chatId)
+		chatCfg, err := s.ChatRepo.GetChatCfg(chatId)
 		if err != nil {
 			logger.Errorf("CacheGroupAdmin getChatConfig err: %s", err.Error())
 			continue
 		}
 		chatCfg.Adminstrators = memberIdList
-		s.ChatRepo.SetConfigCache(chatId, chatCfg)
+		chatCfg.ChatName = chatInfo.Title
+		s.ChatRepo.SetChatCfgCache(chatId, chatCfg)
 
 		// Update UserRecord
 		for mId, mName := range memberIdNameMap {

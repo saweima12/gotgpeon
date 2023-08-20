@@ -14,7 +14,7 @@ func (h *CommandMap) handlePointCmd(helper *utils.MessageHelper) {
 
 	// Define parameter
 	chatId := helper.ChatId()
-	chatCfg := h.PeonService.GetChatConfig(chatId, helper.Chat.Title)
+	chatCfg := h.PeonService.GetChatConfig(chatId)
 
 	// Check group is avaliable.
 	if !chatCfg.IsAvaliable() {

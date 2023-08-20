@@ -1,25 +1,26 @@
 package repositories
 
 import (
-	"encoding/json"
 	"fmt"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/models/entity"
-	"strconv"
 
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	json "gotgpeon/utils/jsonutil"
 )
 
 type ChatRepository interface {
 	GetAvaliableChatIds() []int64
-	GetChatConfig(chatId int64) (*models.ChatConfig, error)
-	SetConfigCache(chatId int64, value *models.ChatConfig) error
-	SetConfigDb(chatId int64, value *models.ChatConfig) error
-	GetViolation(chatId int64, userId int64) (num int, err error)
-	SetViolation(chatId int64, userId int64) (bool, error)
+	GetChatCfg(chatId int64) (*models.ChatConfig, error)
+	SetChatCfgCache(chatId int64, value *models.ChatConfig) error
+
+	GetChatJobCfg(chatId int64) (*models.ChatJobConfig, error)
+	SetChatJobCfgCache(chatId int64, value *models.ChatJobConfig) error
+	UpdateChatCfgDB(chatId int64, newCfg *models.ChatConfig, newJobCfg *models.ChatJobConfig) error
 }
 
 type chatRepository struct {
@@ -47,8 +48,7 @@ func (repo *chatRepository) GetAvaliableChatIds() []int64 {
 }
 
 // Load GroupChat Configuration.
-func (repo *chatRepository) GetChatConfig(chatId int64) (*models.ChatConfig, error) {
-
+func (repo *chatRepository) GetChatCfg(chatId int64) (*models.ChatConfig, error) {
 	var result *models.ChatConfig
 	configKey := repo.getConfigNameSpace(chatId)
 
@@ -66,11 +66,9 @@ func (repo *chatRepository) GetChatConfig(chatId int64) (*models.ChatConfig, err
 
 	// Redis don't have cache. Try load from database.
 	configEntity := entity.PeonChatConfig{}
-	err = repo.GetDB().Table(configEntity.TableName()).
-		Select("*").
+	err = repo.GetDB().
 		Where("chat_id = ?", chatId).
 		Take(&configEntity).Error
-
 	if err != nil {
 		return nil, err
 	}
@@ -80,12 +78,11 @@ func (repo *chatRepository) GetChatConfig(chatId int64) (*models.ChatConfig, err
 		return nil, err
 	}
 
-	repo.SetConfigCache(chatId, result)
-
-	return nil, err
+	repo.SetChatCfgCache(chatId, result)
+	return result, err
 }
 
-func (repo *chatRepository) SetConfigCache(chatId int64, value *models.ChatConfig) error {
+func (repo *chatRepository) SetChatCfgCache(chatId int64, value *models.ChatConfig) error {
 	// serialize to byte
 	bytes, err := json.Marshal(value)
 	if err != nil {
@@ -101,24 +98,78 @@ func (repo *chatRepository) SetConfigCache(chatId int64, value *models.ChatConfi
 	return nil
 }
 
-func (repo *chatRepository) SetConfigDb(chatId int64, value *models.ChatConfig) error {
-	// process parameter.
+func (repo *chatRepository) GetChatJobCfg(chatId int64) (*models.ChatJobConfig, error) {
+	var result models.ChatJobConfig
+
+	namespace := repo.getJobNamespace(chatId)
+	// Try load config from redis
+	byte, err := repo.GetRedis().Get(baseCtx, namespace).Bytes()
+	if err == nil && len(byte) > 0 {
+		err = json.Unmarshal(byte, &result)
+		if err == nil {
+			return &result, nil
+		}
+	}
+	// Try load config from database.
+	chatEntity := entity.PeonChatConfig{}
+	err = repo.GetDB().Where("chat_id = ?", chatId).Take(&chatEntity).Error
+	if err != nil {
+		logger.Errorf("GetChatJobCfg getdb err: %s", err.Error())
+		return nil, err
+	}
+	err = json.Unmarshal(chatEntity.JobConfig, &result)
+	if err != nil {
+		logger.Errorf("GetChatJobCfg db Unmarshal err: %s", err.Error())
+		return nil, err
+	}
+
+	// get data success from database, write into redis.
+	repo.SetChatJobCfgCache(chatId, &result)
+	return nil, nil
+}
+
+func (repo *chatRepository) SetChatJobCfgCache(chatId int64, value *models.ChatJobConfig) error {
+
 	bytes, err := json.Marshal(value)
 	if err != nil {
-		logger.Errorf("SetConfigDb Marshal error: %s", err.Error())
+		logger.Errorf("SetChatJobCfgCache marshal err: %s", err.Error())
+		return err
+	}
+
+	namespace := repo.getJobNamespace(chatId)
+	err = repo.GetRedis().Set(baseCtx, namespace, bytes, 0).Err()
+	if err != nil {
+		logger.Errorf("SetChatJobCfgCache err: %s", err.Error())
+		return err
+	}
+	return nil
+}
+
+func (repo *chatRepository) UpdateChatCfgDB(chatId int64, newCfg *models.ChatConfig, newJobCfg *models.ChatJobConfig) error {
+	// process parameter.
+	bytes, err := json.Marshal(newCfg)
+	if err != nil {
+		logger.Errorf("SetConfigDb Marshal cfg error: %s", err.Error())
+		return err
+	}
+
+	jobBytes, err := json.Marshal(newJobCfg)
+	if err != nil {
+		logger.Errorf("SetConfigDb Marshal jobCfg error: %s", err.Error())
 		return err
 	}
 
 	entityCfg := entity.PeonChatConfig{
-		ChatId:   chatId,
-		Status:   value.Status,
-		ChatName: value.ChatName,
-		Config:   bytes,
+		ChatId:    chatId,
+		Status:    newCfg.Status,
+		ChatName:  newCfg.ChatName,
+		Config:    bytes,
+		JobConfig: jobBytes,
 	}
 
 	err = repo.GetDB().Model(&entityCfg).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "chat_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"status", "chat_name", "config"}),
+		DoUpdates: clause.AssignmentColumns([]string{"status", "chat_name", "config", "job_config"}),
 	}).Create(&entityCfg).Error
 
 	if err != nil {
@@ -129,34 +180,10 @@ func (repo *chatRepository) SetConfigDb(chatId int64, value *models.ChatConfig) 
 	return nil
 }
 
-func (repo *chatRepository) GetViolation(chatId int64, userId int64) (num int, err error) {
-	rdb := repo.GetRedis()
-	key := repo.getViolationNamespace(chatId, userId)
-
-	str, err := rdb.Get(baseCtx, key).Result()
-	if err != nil {
-		logger.Errorf("GetViolation error: %s", err.Error())
-		return -1, err
-	}
-
-	num, err = strconv.Atoi(str)
-	if err != nil {
-		logger.Errorf("GetViolation value error: %s, value: %s", err.Error(), str)
-		return -1, err
-	}
-
-	return num, nil
-}
-
-func (repo *chatRepository) SetViolation(chatId int64, userId int64) (bool, error) {
-	// TODO: Didn't Implement.
-	return false, nil
-}
-
 func (repo *chatRepository) getConfigNameSpace(chatId int64) string {
 	return fmt.Sprintf("%d:config", chatId)
 }
 
-func (repo *chatRepository) getViolationNamespace(chatId int64, userId int64) string {
-	return fmt.Sprintf("%d:violation:%d", chatId, userId)
+func (repo *chatRepository) getJobNamespace(chatId int64) string {
+	return fmt.Sprintf("%d:job", chatId)
 }

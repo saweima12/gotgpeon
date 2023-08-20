@@ -15,11 +15,10 @@ type ChatConfig struct {
 	CheckerList   []CheckerConfig `json:"checker_config"`
 }
 
-func NewDefaultChatConfig(chatId int64, chatName string, adminstrators []int64) *ChatConfig {
+func NewDefaultChatConfig(chatId int64, adminstrators []int64) *ChatConfig {
 	return &ChatConfig{
 		Status:        NG,
 		ChatId:        chatId,
-		ChatName:      chatName,
 		Adminstrators: adminstrators,
 		CheckerList: []CheckerConfig{
 			{Name: "Type"},

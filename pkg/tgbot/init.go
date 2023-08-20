@@ -32,7 +32,6 @@ func InitTgBot(cfg *config.TgBotConfig) (*tgbotapi.BotAPI, error) {
 func StartWebhookProcess(botToken string, botAPI *tgbotapi.BotAPI) *models.TgbotUpdateProcess {
 	// Get update channel.
 	ch := botAPI.ListenForWebhook("/" + botToken)
-
 	// Get updateProcess instance.
 	process := models.TgbotUpdateProcess{
 		BotAPI:     botAPI,

@@ -1,8 +1,6 @@
 package repositories
 
 import (
-	"fmt"
-
 	"gotgpeon/logger"
 	"gotgpeon/models/entity"
 	"strconv"
@@ -52,7 +50,6 @@ func (repo *botConfigRepository) GetAllowlist() map[int64]byte {
 
 	// Read from database.
 	err = repo.GetDB().Table(tableName).Where("status = ?", 1).Find(&rows).Error
-	fmt.Println(rows)
 	if err != nil {
 		logger.Error("Bot GetAllowlist Err:" + err.Error())
 		return result

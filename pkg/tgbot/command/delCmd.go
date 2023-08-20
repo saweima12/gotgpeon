@@ -7,7 +7,7 @@ import (
 // handle /point command
 func (h *CommandMap) handleDelCmd(helper *utils.MessageHelper) {
 
-	chatCfg := h.PeonService.GetChatConfig(helper.ChatId(), helper.Chat.Title)
+	chatCfg := h.PeonService.GetChatConfig(helper.ChatId())
 	if !chatCfg.IsAvaliable() {
 		return
 	}
