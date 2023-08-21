@@ -4,9 +4,6 @@ import (
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/repositories"
-	"gotgpeon/utils/jsonutil"
-
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type PeonService interface {
@@ -19,7 +16,6 @@ type PeonService interface {
 
 	GetBotAllowlist() map[int64]byte
 	IsAllowListUser(userId int64) bool
-	InsertDeletedRecord(chatId int64, contentType string, message *tgbotapi.Message) error
 }
 
 type peonService struct {
@@ -77,20 +73,6 @@ func (s *peonService) UpdateChatConfigDB(chatId int64) error {
 	newCfg := s.GetChatConfig(chatId)
 	newJobCfg := s.GetChatJobConfig(chatId)
 	s.chatRepo.UpdateChatCfgDB(chatId, newCfg, newJobCfg)
-
-	return nil
-}
-
-func (s *peonService) InsertDeletedRecord(chatId int64, contentType string, message *tgbotapi.Message) error {
-	jsonBytes, err := jsonutil.Marshal(message)
-	if err != nil {
-		logger.Errorf("InsertDeletedRecord marshal err: %s || msg: %v", err.Error(), message)
-	}
-	// Add to database.
-	err = s.deletedMsgRepo.InsertDeletedRecord(chatId, contentType, jsonBytes)
-	if err != nil {
-		logger.Errorf("InsertDeletedRecord err: %s", err.Error())
-	}
 
 	return nil
 }

@@ -14,10 +14,11 @@ type PeonSchedule interface {
 }
 
 type peonSchedule struct {
-	Croniter      *cron.Cron
-	BotAPI        *tgbotapi.BotAPI
-	ChatRepo      repositories.ChatRepository
-	RecordService services.RecordService
+	Croniter       *cron.Cron
+	BotAPI         *tgbotapi.BotAPI
+	ChatRepo       repositories.ChatRepository
+	RecordService  services.RecordService
+	DeletedService services.DeletedService
 }
 
 func NewPeonSchedule(botAPI *tgbotapi.BotAPI) (PeonSchedule, error) {
@@ -28,15 +29,18 @@ func NewPeonSchedule(botAPI *tgbotapi.BotAPI) (PeonSchedule, error) {
 	// declare repository & service
 	chatRepo := repositories.NewChatRepo(dbConn, rdb)
 	recordRepo := repositories.NewRecordRepository(dbConn, rdb)
+	deletedRepo := repositories.NewDeletedMsgRepository(dbConn, rdb)
 
 	recordService := services.NewRecordService(recordRepo)
+	deletedService := services.NewDeletedService(deletedRepo)
 
 	// declare schedule.
 	sch := &peonSchedule{
-		Croniter:      croniter,
-		BotAPI:        botAPI,
-		ChatRepo:      chatRepo,
-		RecordService: recordService,
+		Croniter:       croniter,
+		BotAPI:         botAPI,
+		ChatRepo:       chatRepo,
+		RecordService:  recordService,
+		DeletedService: deletedService,
 	}
 
 	// Startup job.

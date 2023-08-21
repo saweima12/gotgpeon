@@ -21,11 +21,12 @@ type MessageHandler interface {
 }
 
 type messageHandler struct {
-	peonService   services.PeonService
-	recordService services.RecordService
-	botService    services.BotService
-	checker       checker.CheckerHandler
-	cmdMap        command.CommandHandler
+	peonService    services.PeonService
+	recordService  services.RecordService
+	botService     services.BotService
+	deletedService services.DeletedService
+	checker        checker.CheckerHandler
+	cmdMap         command.CommandHandler
 }
 
 func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client, botAPI *tgbotapi.BotAPI) MessageHandler {
@@ -39,6 +40,7 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client, botAPI *tgbotap
 	peonService := services.NewPeonService(chatRepo, botRepo, deletedMsgRepo)
 	recordService := services.NewRecordService(recordRepo)
 	botService := services.NewBotService(botAPI)
+	deletedService := services.NewDeletedService(deletedMsgRepo)
 
 	// Initialize commandMap
 	cmdMap := &command.CommandMap{
@@ -54,11 +56,12 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client, botAPI *tgbotap
 
 	// Initialize command map
 	return &messageHandler{
-		peonService:   peonService,
-		recordService: recordService,
-		botService:    botService,
-		cmdMap:        cmdMap,
-		checker:       checker,
+		peonService:    peonService,
+		recordService:  recordService,
+		botService:     botService,
+		deletedService: deletedService,
+		cmdMap:         cmdMap,
+		checker:        checker,
 	}
 }
 

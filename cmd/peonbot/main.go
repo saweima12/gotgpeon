@@ -52,7 +52,6 @@ func main() {
 
 	// Initialize ants pool.
 	err = poolutil.Init()
-
 	if err != nil {
 		panic("Initialize goroutine pool err" + err.Error())
 	}
