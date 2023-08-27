@@ -3,10 +3,11 @@ package tgbot
 import (
 	"gotgpeon/config"
 	"gotgpeon/db"
+	"gotgpeon/libs/ants"
+	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot/handler"
 	"gotgpeon/utils"
-	"gotgpeon/utils/poolutil"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -35,7 +36,7 @@ func StartWebhookProcess(botToken string, botAPI *tgbotapi.BotAPI) *models.Tgbot
 	// Get updateProcess instance.
 	process := models.TgbotUpdateProcess{
 		BotAPI:     botAPI,
-		QuitChan:   make(chan bool),
+		QuitChan:   make(chan struct{}),
 		UpdateChan: ch,
 	}
 
@@ -95,15 +96,17 @@ func runUpdateProcess(c *models.TgbotUpdateProcess, botAPI *tgbotapi.BotAPI) {
 	// Create handler.
 	msgHandler := handler.NewMessageHandler(dbConn, cacheConn, botAPI)
 
+LOOP:
 	for {
 		select {
 		case <-c.QuitChan:
-			return
+			break LOOP
 		case update := <-c.UpdateChan:
-			{
-				poolutil.Submit(ProcessUpdate(msgHandler, update, botAPI))
-			}
+			ants.Submit(ProcessUpdate(msgHandler, update, botAPI))
 		default:
 		}
 	}
+
+	logger.Info("UpdateProcess stop ...")
+
 }

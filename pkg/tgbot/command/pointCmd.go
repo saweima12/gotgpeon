@@ -2,7 +2,7 @@ package command
 
 import (
 	"gotgpeon/models"
-	"gotgpeon/utils"
+	"gotgpeon/pkg/tgbot/core"
 	"strconv"
 	"time"
 
@@ -10,7 +10,7 @@ import (
 )
 
 // handle /point command
-func (h *CommandMap) handlePointCmd(helper *utils.MessageHelper) {
+func (h *CommandMap) handlePointCmd(helper *core.MessageHelper) {
 
 	// Define parameter
 	chatId := helper.ChatId()

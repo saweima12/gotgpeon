@@ -4,13 +4,13 @@ import (
 	"flag"
 	"gotgpeon/config"
 	"gotgpeon/db"
+	"gotgpeon/libs/ants"
+	"gotgpeon/libs/gocc"
+	"gotgpeon/libs/timewheel"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot"
 	"gotgpeon/utils"
-	"gotgpeon/utils/goccutil"
-	"gotgpeon/utils/poolutil"
-	"gotgpeon/utils/timewheel"
 	"net/http"
 )
 
@@ -51,7 +51,7 @@ func main() {
 	}
 
 	// Initialize ants pool.
-	err = poolutil.Init()
+	err = ants.Init()
 	if err != nil {
 		panic("Initialize goroutine pool err" + err.Error())
 	}
@@ -82,7 +82,7 @@ func main() {
 	defer client.Stop()
 
 	// Initialize opencc
-	goccutil.InitOpenCC()
+	gocc.InitOpenCC()
 	logger.Info("Initialize finished.")
 
 	// handle signal
@@ -90,7 +90,7 @@ func main() {
 
 	// Start a http server for listen update
 	go func() {
-		err = http.ListenAndServe(":"+cfg.Common.ListenPort, nil)
+		err = http.ListenAndServe(":"+cfg.Common.ListenPort, http.DefaultServeMux)
 		if err != nil {
 			logger.Error("Listen hook err" + err.Error())
 		}

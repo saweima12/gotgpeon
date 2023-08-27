@@ -3,17 +3,17 @@ package handler
 import (
 	"fmt"
 	"gotgpeon/config"
+	"gotgpeon/libs/ants"
+	"gotgpeon/libs/json"
 	"gotgpeon/logger"
 	"gotgpeon/models"
-	"gotgpeon/utils"
-	"gotgpeon/utils/jsonutil"
-	"gotgpeon/utils/poolutil"
+	"gotgpeon/pkg/tgbot/core"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
+func (h *messageHandler) handleGroupMessage(helper *core.MessageHelper) {
 
 	chatId := helper.ChatId()
 	// Check chat is avaliable
@@ -42,10 +42,10 @@ func (h *messageHandler) handleGroupMessage(helper *utils.MessageHelper) {
 	}
 }
 
-func (h *messageHandler) handleDeleteMessage(helper *utils.MessageHelper, text string) {
-	poolutil.Submit(func() {
+func (h *messageHandler) handleDeleteMessage(helper *core.MessageHelper, text string) {
+	ants.Submit(func() {
 		// print log
-		jsonStr, err := jsonutil.MarshalToString(helper.Message)
+		jsonStr, err := json.MarshalToString(helper.Message)
 		if err != nil {
 			logger.Errorf("handleDeleteMessage err: %v", helper)
 		}

@@ -3,11 +3,11 @@ package checker
 import (
 	"gotgpeon/config"
 	"gotgpeon/models"
-	"gotgpeon/utils"
+	"gotgpeon/pkg/tgbot/core"
 	"gotgpeon/utils/sliceutil"
 )
 
-func (c *MessageChecker) CheckNoForward(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
+func (c *MessageChecker) CheckNoForward(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
 	if helper.IsForward() {
 		result.MarkDelete = true
 		result.Message = config.GetTextLang().ErrForward
@@ -18,7 +18,7 @@ func (c *MessageChecker) CheckNoForward(helper *utils.MessageHelper, ctx *models
 }
 
 // Check the message for any issues and return whether to continue the inspection.
-func (c *MessageChecker) CheckTypeNoMedia(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
+func (c *MessageChecker) CheckTypeNoMedia(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
 	// check message type
 	if ctx.Record.MemberLevel >= models.LIMIT {
 		if c.checkLimitUserOK(helper, ctx) {
@@ -37,7 +37,7 @@ func (c *MessageChecker) CheckTypeNoMedia(helper *utils.MessageHelper, ctx *mode
 	return true
 }
 
-func (c *MessageChecker) checkLimitUserOK(helper *utils.MessageHelper, ctx *models.MessageContext) bool {
+func (c *MessageChecker) checkLimitUserOK(helper *core.MessageHelper, ctx *models.MessageContext) bool {
 	if helper.Sticker != nil || helper.Photo != nil || helper.Animation != nil || helper.Video != nil {
 		if helper.ViaBot != nil {
 			allowViaList := config.GetConfig().Common.AllowViaBots

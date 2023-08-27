@@ -2,14 +2,14 @@ package handler
 
 import (
 	"gotgpeon/config"
+	"gotgpeon/libs/json"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/repositories"
 	"gotgpeon/pkg/services"
 	"gotgpeon/pkg/tgbot/checker"
 	"gotgpeon/pkg/tgbot/command"
-	"gotgpeon/utils"
-	"gotgpeon/utils/jsonutil"
+	"gotgpeon/pkg/tgbot/core"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/redis/go-redis/v9"
@@ -66,10 +66,10 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client, botAPI *tgbotap
 }
 
 func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI, isEdit bool) {
-	helper := utils.NewMessageHelper(message, bot)
+	helper := core.NewMessageHelper(message, bot)
 
 	// HandleMessage.
-	data, _ := jsonutil.MarshalToString(message)
+	data, _ := json.MarshalToString(message)
 	logger.Debug(data)
 
 	if helper.IsSuperGroup() {
@@ -84,7 +84,7 @@ func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.
 	}
 }
 
-func (h *messageHandler) getMessageContext(helper *utils.MessageHelper, chatCfg *models.ChatConfig) *models.MessageContext {
+func (h *messageHandler) getMessageContext(helper *core.MessageHelper, chatCfg *models.ChatConfig) *models.MessageContext {
 	chatId := helper.ChatId()
 	userId := helper.UserId()
 
@@ -109,10 +109,10 @@ func (h *messageHandler) getMessageContext(helper *utils.MessageHelper, chatCfg 
 	}
 }
 
-func (h *messageHandler) handleEnterGroupMsg(helper *utils.MessageHelper) {
+func (h *messageHandler) handleEnterGroupMsg(helper *core.MessageHelper) {
 
 }
 
-func (h *messageHandler) handleLeaveGroupMsg(helper *utils.MessageHelper) {
+func (h *messageHandler) handleLeaveGroupMsg(helper *core.MessageHelper) {
 
 }

@@ -5,13 +5,13 @@ import (
 	"gotgpeon/config"
 	"gotgpeon/logger"
 	"gotgpeon/models"
-	"gotgpeon/utils"
+	"gotgpeon/pkg/tgbot/core"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 // Handle /start command
-func (h *CommandMap) handleStartCmd(helper *utils.MessageHelper) {
+func (h *CommandMap) handleStartCmd(helper *core.MessageHelper) {
 	// Check user is allowlist user..
 	if !h.PeonService.IsAllowListUser(helper.UserId()) {
 		return

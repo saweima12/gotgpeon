@@ -5,14 +5,14 @@ import (
 	"gotgpeon/config"
 	"gotgpeon/logger"
 	"gotgpeon/models"
-	"gotgpeon/utils"
+	"gotgpeon/pkg/tgbot/core"
 	"strings"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func (h *CommandMap) handleSetLevelCmd(helper *utils.MessageHelper) {
+func (h *CommandMap) handleSetLevelCmd(helper *core.MessageHelper) {
 	chatId := helper.ChatId()
 	chatCfg := h.PeonService.GetChatConfig(chatId)
 
@@ -78,7 +78,7 @@ func (h *CommandMap) handleSetLevelCmd(helper *utils.MessageHelper) {
 	h.BotService.SendMessage(newMsg, time.Second*5)
 }
 
-func validateSetLevelParameter(helper *utils.MessageHelper) (level int, ok bool) {
+func validateSetLevelParameter(helper *core.MessageHelper) (level int, ok bool) {
 
 	if helper.ReplyToMessage == nil {
 		return models.NONE, false

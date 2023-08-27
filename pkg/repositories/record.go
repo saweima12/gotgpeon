@@ -1,13 +1,12 @@
 package repositories
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
+	"gotgpeon/libs/json"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/models/entity"
-	"gotgpeon/utils/jsonutil"
 	"strconv"
 
 	"github.com/redis/go-redis/v9"
@@ -49,7 +48,7 @@ func (repo *recordRepository) GetAllUserRecordCache(chatId int64) (result map[in
 		memberId64 := int64(memberId)
 
 		memberRecord := &models.MessageRecord{}
-		err = jsonutil.UnmarshalFromString(v, memberRecord)
+		err = json.UnmarshalFromString(v, memberRecord)
 		if err != nil {
 			logger.Errorf("GetAllUserRecordCache Unmarshal err: %s", err.Error())
 			continue
@@ -105,7 +104,7 @@ func (repo *recordRepository) SetUserRecordCache(chatId int64, record *models.Me
 
 	// Marshal to byte
 	nameSpace := repo.getRecordNamespace(chatId)
-	byte, err := jsonutil.Marshal(record)
+	byte, err := json.Marshal(record)
 	if err != nil {
 		logger.Errorf("SetUserRecordCache Marshal err: %s", err.Error())
 		return err

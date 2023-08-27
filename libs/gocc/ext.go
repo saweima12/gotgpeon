@@ -1,4 +1,4 @@
-package goccutil
+package gocc
 
 import (
 	"gotgpeon/logger"

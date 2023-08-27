@@ -2,11 +2,11 @@ package checker
 
 import (
 	"gotgpeon/models"
-	"gotgpeon/utils"
+	"gotgpeon/pkg/tgbot/core"
 )
 
 type CheckerHandler interface {
-	CheckMessage(helper *utils.MessageHelper, ctx *models.MessageContext) *CheckResult
+	CheckMessage(helper *core.MessageHelper, ctx *models.MessageContext) *CheckResult
 }
 
 type CheckResult struct {
@@ -17,7 +17,7 @@ type CheckResult struct {
 
 type MessageChecker struct {
 	checkerMap map[string]func(
-		helper *utils.MessageHelper,
+		helper *core.MessageHelper,
 		ctx *models.MessageContext,
 		result *CheckResult,
 		parameter interface{},
@@ -25,7 +25,7 @@ type MessageChecker struct {
 }
 
 func (c *MessageChecker) Init() {
-	c.checkerMap = map[string]func(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter interface{}) bool{
+	c.checkerMap = map[string]func(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter interface{}) bool{
 		"Type":          c.CheckTypeNoMedia,
 		"Forward":       c.CheckNoForward,
 		"Entities":      c.CheckEntitiesOK,
@@ -37,7 +37,7 @@ func (c *MessageChecker) Init() {
 	}
 }
 
-func (c *MessageChecker) CheckMessage(helper *utils.MessageHelper, ctx *models.MessageContext) *CheckResult {
+func (c *MessageChecker) CheckMessage(helper *core.MessageHelper, ctx *models.MessageContext) *CheckResult {
 	result := &CheckResult{
 		MarkDelete: false,
 		MarkRecord: true,

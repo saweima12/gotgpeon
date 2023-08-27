@@ -28,7 +28,6 @@ func InitDbConn(cfg *config.CommonConfig) error {
 		logger.Errorf("Redis connection err: %s, uri: %s", err.Error(), cfg.RedisUri)
 		return err
 	}
-
 	// Set database connection
 	dbConn, err := sqldb.InitPostgresDb(cfg.DBUri, cfg.Mode)
 	if err != nil {

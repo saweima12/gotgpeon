@@ -1,4 +1,4 @@
-package poolutil
+package ants
 
 import "github.com/panjf2000/ants/v2"
 

@@ -2,16 +2,16 @@ package checker
 
 import (
 	"gotgpeon/config"
+	"gotgpeon/libs/gocc"
 	"gotgpeon/models"
-	"gotgpeon/utils"
-	"gotgpeon/utils/goccutil"
+	"gotgpeon/pkg/tgbot/core"
 	"regexp"
 	"strings"
 )
 
 var ChPtn = regexp.MustCompile("[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]")
 
-func (c *MessageChecker) CheckContentNoSpchLang(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
+func (c *MessageChecker) CheckContentNoSpchLang(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
 	if helper.Text != "" {
 		// check spchinese
 		if !checkSpChineseOK(helper.Text, 2) {
@@ -24,7 +24,7 @@ func (c *MessageChecker) CheckContentNoSpchLang(helper *utils.MessageHelper, ctx
 	return true
 }
 
-func (c *MessageChecker) CheckNameNospchLang(helper *utils.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
+func (c *MessageChecker) CheckNameNospchLang(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
 	if !checkSpChineseOK(helper.FullName(), 1) {
 		// Check sender name
 		result.MarkDelete = true
@@ -41,7 +41,7 @@ func checkSpChineseOK(text string, limit int) bool {
 	allCh := ChPtn.FindAllString(text, -1)
 	// Merge to a string
 	originStr := strings.Join(allCh, "")
-	tcStr := goccutil.S2T(originStr)
+	tcStr := gocc.S2T(originStr)
 
 	originStrRunes := []rune(originStr)
 	tcStrRunes := []rune(tcStr)

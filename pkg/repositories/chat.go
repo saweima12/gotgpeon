@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	json "gotgpeon/utils/jsonutil"
+	"gotgpeon/libs/json"
 )
 
 type ChatRepository interface {

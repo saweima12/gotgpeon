@@ -1,10 +1,10 @@
 package services
 
 import (
+	"gotgpeon/libs/timewheel"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot/boterr"
-	"gotgpeon/utils/timewheel"
 	"time"
 
 	"github.com/avast/retry-go"

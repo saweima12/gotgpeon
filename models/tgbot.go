@@ -6,13 +6,13 @@ import (
 
 type TgbotUpdateProcess struct {
 	BotAPI     *tgbotapi.BotAPI
-	QuitChan   chan bool
+	QuitChan   chan struct{}
 	UpdateChan tgbotapi.UpdatesChannel
 }
 
 func (c *TgbotUpdateProcess) Stop() {
 	if c.QuitChan != nil {
-		c.QuitChan <- true
+		c.QuitChan <- struct{}{}
 	}
 
 	if c.BotAPI != nil {

@@ -1,11 +1,9 @@
 package command
 
-import (
-	"gotgpeon/utils"
-)
+import "gotgpeon/pkg/tgbot/core"
 
 // handle /point command
-func (h *CommandMap) handleDelCmd(helper *utils.MessageHelper) {
+func (h *CommandMap) handleDelCmd(helper *core.MessageHelper) {
 
 	chatCfg := h.PeonService.GetChatConfig(helper.ChatId())
 	if !chatCfg.IsAvaliable() {
