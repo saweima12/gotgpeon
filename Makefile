@@ -4,7 +4,10 @@ bot:
 job:
 	go run ./cmd/peonjob
 
-build_bot:
-	go build ./cmd/peonbot 
+build:
+	go build -o ./app/ ./cmd/...
+
+build_img:
+	docker build . -f ./docker/Dockerfile --no-cache -t peon
 
 
