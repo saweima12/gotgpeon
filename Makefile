@@ -8,6 +8,6 @@ build:
 	go build -o ./app/ ./cmd/...
 
 build_img:
-	docker build . -f ./docker/Dockerfile --no-cache -t peon
+	docker build . -f ./Dockerfile --no-cache -t peon
 
 
