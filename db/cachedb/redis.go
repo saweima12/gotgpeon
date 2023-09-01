@@ -19,6 +19,7 @@ func InitRedis(redisUri string) (*redis.Client, error) {
 	dbNum, _ := strconv.Atoi(uri.Path[1:])
 
 	opt := redis.Options{
+		Addr:     uri.Host,
 		Username: usr,
 		Password: pwd,
 		DB:       dbNum,

@@ -59,7 +59,7 @@ func (s *botService) SendMessage(message tgbotapi.Chattable, duration time.Durat
 func (s *botService) DeleteMessageById(chatId int64, messageId int) {
 	deleteReq := tgbotapi.NewDeleteMessage(chatId, messageId)
 
-	s.processDeleteReq(deleteReq)
+	s.sendDeleteReq(deleteReq)
 }
 
 func (s *botService) SetPermission(chatId int64, userId int64, level int, until_date int64) error {
@@ -79,7 +79,7 @@ func (s *botService) SetPermission(chatId int64, userId int64, level int, until_
 	return nil
 }
 
-func (s *botService) processDeleteReq(deleteReq tgbotapi.Chattable) {
+func (s *botService) sendDeleteReq(deleteReq tgbotapi.Chattable) {
 	retry.Do(func() error {
 		// Send delete request to telegram.
 		_, err := s.BotAPI.Request(deleteReq)

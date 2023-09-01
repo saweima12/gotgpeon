@@ -1,0 +1,39 @@
+version: "3.7"
+
+services:
+  peonbot:
+    build:
+      context: ".."
+      dockerfile: "Dockerfile"
+    depends_on:
+      - pgdb
+      - redisdb
+    command: "./peonbot"
+    
+  pgdb:
+      image: postgres:15.3-alpine
+      restart: always
+      environment:
+          POSTGRES_DB: peonbot
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: admin1234
+          PGDATA: /var/lib/postgresql/data
+      volumes:
+          - dbvol:/var/lib/postgresql/data
+      ports:
+          - "5432:5432"
+
+  redisdb:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - redisvol:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  redisvol:
+    external: false
+  dbvol:
+    external: false
+
