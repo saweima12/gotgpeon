@@ -1,0 +1,73 @@
+version: "3.7"
+
+networks:
+  peonsuit-net:
+    driver: "bridge"
+    
+services:
+  peonsetup:
+    image: peonsuit:latest
+    depends_on:
+      - pgdb
+      - redisdb
+    volumes:
+      - "./config.yml:/app/config.yml"
+    networks:
+      - peonsuit-net
+    command: "./peonsetup"
+    
+  peonbot:
+    image: peonsuit:latest
+    depends_on:
+      - pgdb
+      - redisdb
+      - peonsetup
+    volumes:
+      - "./config.yml:/app/config.yml"
+    networks:
+      - peonsuit-net
+    command: "./peonbot"
+    
+  peonjob:
+    image: peonsuit:latest
+    depends_on:
+      - pgdb
+      - redisdb
+      - peonsetup
+    volumes:
+      - "./config.yml:/app/config.yml"
+    networks:
+      - peonsuit-net
+    command: "./peonjob"
+    
+  pgdb:
+    image: postgres:15.3-alpine
+    restart: always
+    environment:
+        POSTGRES_DB: peonbot
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: admin1234
+        PGDATA: /var/lib/postgresql/data
+    volumes:
+      - "dbvol:/var/lib/postgresql/data"
+    networks:
+      - peonsuit-net
+    ports:
+      - 5432:5432
+
+  redisdb:
+    image: "redis:7-alpine"
+    ports:
+      - 6379:6379
+    volumes:
+      - redisvol:/data
+    networks:
+      - peonsuit-net
+    command: redis-server --appendonly yes
+
+volumes:
+  redisvol:
+    external: false
+  dbvol:
+    external: false
+

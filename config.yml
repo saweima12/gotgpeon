@@ -1,0 +1,16 @@
+common:
+  # Mode ? dev || pro
+  mode: "dev" 
+  port: 9000
+  db_uri: "postgres://postgres:admin1234@pgdb:5432/peonbot"
+  redis_uri: "redis://redisdb:6379/0"
+  allow_viabots:
+    - "mmbq_bot"
+tgbot:
+  bot_token: ""
+  update_mode: "poll" # poll or hook
+  auto_set_webhook: true
+  hook_url: ""
+
+ignore_word:
+  - "台"

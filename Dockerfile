@@ -1,4 +1,5 @@
-FROM golang:1.20 as build
+FROM golang:1.20 as builder
+LABEL stage=builder
 
 WORKDIR /data
 # COPY project into build image.
@@ -13,12 +14,15 @@ RUN git clone https://github.com/liuzl/gocc.git
 RUN CGO_ENABLED=0 go build -o ./app/ ./cmd/...
 
 # Build finish, Copy to runtime
-from alpine as runtime
-# FROM gcr.io/distroless/static-debian12 as runtime
+# from alpine as runtime
+FROM gcr.io/distroless/static-debian12 as runtime
+LABEL stage=runtime
+
+
 WORKDIR /app
 
-COPY --from=build /data/app ./
-COPY --from=build /data/config.yml ./
-COPY --from=build /data/lang.yml ./
-COPY --from=build /data/gocc/config ./
-COPY --from=build /data/gocc/dictionary ./
+COPY --from=builder /data/app ./
+COPY --from=builder /data/config.yml ./
+COPY --from=builder /data/lang.yml ./
+COPY --from=builder /data/gocc/config ./
+COPY --from=builder /data/gocc/dictionary ./
