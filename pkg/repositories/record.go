@@ -82,20 +82,20 @@ func (repo *recordRepository) GetUserRecord(chatId int64, query *models.MessageR
 
 	err = db.Where("member_id = ? AND chat_id = ?", query.MemberId, chatId).
 		Take(&entity).Error
+
 	if err != nil {
-		logger.Errorf(err.Error())
 		if !errors.Is(gorm.ErrRecordNotFound, err) {
 			logger.Errorf("GetUserRecord query db err: %v", err)
 		}
 		return nil, err
 	}
-
 	result = &models.MessageRecord{
 		MemberId:    entity.MemberId,
 		CreatedDate: entity.CreatedTime,
 		Point:       entity.MsgCount,
 		MemberLevel: entity.MemberLevel,
 	}
+
 	return result, nil
 }
 
@@ -125,18 +125,33 @@ func (repo *recordRepository) SetUserRecordCache(chatId int64, record *models.Me
 }
 
 func (repo *recordRepository) SetUserRecordDB(chatId int64, record *models.MessageRecord) error {
+	var err error
 
-	schema := entity.PeonChatMemberRecord{
+	cmSchema := entity.PeonChatMemberRecord{
 		ChatId:      chatId,
 		MemberId:    record.MemberId,
 		MsgCount:    record.Point,
 		MemberLevel: record.MemberLevel,
 	}
 
-	err := repo.GetDB().Clauses(clause.OnConflict{
+	err = repo.GetDB().Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "chat_id"}, {Name: "member_id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"msg_count"}),
-	}).Create(&schema).Error
+	}).Create(&cmSchema).Error
+	if err != nil {
+		logger.Errorf("SetChatUserRecordDB err:", err.Error())
+		return err
+	}
+
+	mSchema := entity.PeonMemberRecord{
+		MemberId: record.MemberId,
+		FullName: record.FullName,
+	}
+
+	err = repo.GetDB().Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "member_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"full_name"}),
+	}).Create(&mSchema).Error
 	if err != nil {
 		logger.Errorf("SetUserRecordDB err:", err.Error())
 		return err

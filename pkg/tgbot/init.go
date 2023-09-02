@@ -3,7 +3,6 @@ package tgbot
 import (
 	"gotgpeon/config"
 	"gotgpeon/db"
-	"gotgpeon/libs/ants"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot/handler"
@@ -95,15 +94,13 @@ func runUpdateProcess(c *models.TgbotUpdateProcess, botAPI *tgbotapi.BotAPI) {
 	cacheConn := db.GetCache()
 	// Create handler.
 	msgHandler := handler.NewMessageHandler(dbConn, cacheConn, botAPI)
-
 LOOP:
 	for {
 		select {
 		case <-c.QuitChan:
 			break LOOP
 		case update := <-c.UpdateChan:
-			ants.Submit(ProcessUpdate(msgHandler, update, botAPI))
-		default:
+			ProcessUpdate(msgHandler, update, botAPI)
 		}
 	}
 

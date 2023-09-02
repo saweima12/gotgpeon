@@ -97,7 +97,6 @@ func (h *messageHandler) getMessageContext(helper *core.MessageHelper, chatCfg *
 		FullName: helper.FullName(),
 	}
 	userRecord := h.recordService.GetUserRecord(chatId, recordQuery)
-
 	// Get serviceConfig.
 	commonCfg := config.GetConfig().Common
 

@@ -8,7 +8,7 @@ import (
 
 type PeonMemberRecord struct {
 	ID          uint      `gorm:"primarykey"`
-	MemberId    int64     `gorm:"member_id; index"`
+	MemberId    int64     `gorm:"member_id; index:member_idx,unique"`
 	FullName    string    `gorm:"full_name"`
 	CreatedDate time.Time `gorm:"created_date; type:timestamptz"`
 }
