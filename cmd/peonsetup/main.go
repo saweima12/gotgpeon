@@ -2,10 +2,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"gotgpeon/config"
 	"gotgpeon/db"
 	"gotgpeon/logger"
 	"gotgpeon/models/entity"
+	"gotgpeon/pkg/tgbot"
 )
 
 var configPath string
@@ -36,6 +38,23 @@ func main() {
 	}
 
 	InitSchema()
+
+	// Initialize webhook
+	if cfg.TgBot.UpdateMode != "webhook" {
+		return
+	}
+
+	botAPI, err := tgbot.InitTgBot(&cfg.TgBot)
+	if err != nil {
+		panic("Intitialize Telegram bot err: " + err.Error())
+	}
+	endpoint := cfg.TgBot.HookURL + cfg.TgBot.BotToken
+	fmt.Println("Setup Webhook endpoint:" + endpoint)
+	err = tgbot.SetWebhook(endpoint, botAPI)
+	if err != nil {
+		panic("SetWebhook err:" + err.Error())
+	}
+
 }
 
 func InitSchema() {

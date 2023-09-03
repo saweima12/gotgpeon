@@ -1,12 +1,15 @@
 package tgbot
 
 import (
+	"encoding/json"
+	"fmt"
 	"gotgpeon/config"
 	"gotgpeon/db"
 	"gotgpeon/logger"
 	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot/handler"
 	"gotgpeon/utils"
+	"net/http"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -32,6 +35,7 @@ func InitTgBot(cfg *config.TgBotConfig) (*tgbotapi.BotAPI, error) {
 func StartWebhookProcess(botToken string, botAPI *tgbotapi.BotAPI) *models.TgbotUpdateProcess {
 	// Get update channel.
 	ch := botAPI.ListenForWebhook("/" + botToken)
+
 	// Get updateProcess instance.
 	process := models.TgbotUpdateProcess{
 		BotAPI:     botAPI,
@@ -64,7 +68,6 @@ func SetWebhook(hookURL string, bot *tgbotapi.BotAPI) error {
 	if err != nil {
 		return err
 	}
-
 	// Send request to telegram api
 	resp, err := bot.Request(webhook)
 	if err != nil {
@@ -78,14 +81,24 @@ func SetWebhook(hookURL string, bot *tgbotapi.BotAPI) error {
 	return nil
 }
 
-func ProcessUpdate(msgHandler handler.MessageHandler, update tgbotapi.Update, botAPI *tgbotapi.BotAPI) func() {
-	return func() {
-		if update.Message != nil {
-			msgHandler.HandleMessage(update.Message, botAPI, false)
-		}
-		if update.EditedMessage != nil {
-			msgHandler.HandleMessage(update.EditedMessage, botAPI, true)
-		}
+func DeleteWebhook(bot *tgbotapi.BotAPI) error {
+	cfg := tgbotapi.DeleteWebhookConfig{DropPendingUpdates: false}
+
+	resp, err := bot.Request(cfg)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(resp)
+	return nil
+}
+
+func ProcessUpdate(msgHandler handler.MessageHandler, update tgbotapi.Update, botAPI *tgbotapi.BotAPI) {
+	if update.Message != nil {
+		msgHandler.HandleMessage(update.Message, botAPI, false)
+	}
+	if update.EditedMessage != nil {
+		msgHandler.HandleMessage(update.EditedMessage, botAPI, true)
 	}
 }
 
@@ -105,5 +118,19 @@ LOOP:
 	}
 
 	logger.Info("UpdateProcess stop ...")
+}
 
+func AttachTestMe(botAPI *tgbotapi.BotAPI) {
+	// Add test function.
+	http.HandleFunc("/"+botAPI.Token+"/me", func(w http.ResponseWriter, r *http.Request) {
+		me, _ := botAPI.GetMe()
+		hookInfo, _ := botAPI.GetWebhookInfo()
+
+		result := make(map[string]interface{})
+		result["Me"] = me
+		result["Hook"] = hookInfo
+
+		bytes, _ := json.Marshal(result)
+		w.Write(bytes)
+	})
 }

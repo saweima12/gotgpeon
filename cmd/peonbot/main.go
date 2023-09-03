@@ -68,13 +68,18 @@ func main() {
 	if err != nil {
 		panic("Initialize telegram bot err:" + err.Error())
 	}
+	if cfg.Common.Mode == "dev" {
+		tgbot.AttachTestMe(botClient)
+	}
+	defer tgbot.DeleteWebhook(botClient)
 
 	var client *models.TgbotUpdateProcess
 	// Add Webhook route and launche update process.
-	if cfg.Common.Mode == "webhook" {
+	if cfg.TgBot.UpdateMode == "webhook" {
 		client = tgbot.StartWebhookProcess(cfg.TgBot.BotToken, botClient)
 		logger.Info("UpdateMode: Webhook")
 	} else {
+		tgbot.DeleteWebhook(botClient)
 		client = tgbot.StartLongPollProcess(botClient)
 		logger.Info("UpdateMode: LongPoll")
 	}
