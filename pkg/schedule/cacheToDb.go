@@ -38,7 +38,7 @@ func (s *peonSchedule) CacheToDB() {
 		delList := make([]int64, 0)
 		for _, user := range users {
 			if user.MemberLevel < models.JUNIOR {
-				dayCheck := now.Sub(user.CreatedDate) >= time.Hour*24*time.Duration(chatJobCfg.JuniorDay)
+				dayCheck := now.Sub(user.CreatedTime) >= time.Hour*24*time.Duration(chatJobCfg.JuniorDay)
 				if user.Point >= int(chatJobCfg.JuniorLowest) && dayCheck {
 					user.MemberLevel = models.JUNIOR
 				}

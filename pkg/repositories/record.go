@@ -91,7 +91,7 @@ func (repo *recordRepository) GetUserRecord(chatId int64, query *models.MessageR
 	}
 	result = &models.MessageRecord{
 		MemberId:    entity.MemberId,
-		CreatedDate: entity.CreatedTime,
+		CreatedTime: entity.CreatedTime,
 		Point:       entity.MsgCount,
 		MemberLevel: entity.MemberLevel,
 	}

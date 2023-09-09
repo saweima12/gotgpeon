@@ -10,7 +10,7 @@ type PeonMemberRecord struct {
 	ID          uint      `gorm:"primarykey"`
 	MemberId    int64     `gorm:"member_id; index:member_idx,unique"`
 	FullName    string    `gorm:"full_name"`
-	CreatedDate time.Time `gorm:"created_date; type:timestamptz"`
+	CreatedTime time.Time `gorm:"created_time; type:timestamptz"`
 }
 
 func (PeonMemberRecord) TableName() string {
@@ -18,6 +18,6 @@ func (PeonMemberRecord) TableName() string {
 }
 
 func (m *PeonMemberRecord) BeforeCreate(tx *gorm.DB) (err error) {
-	m.CreatedDate = time.Now().UTC()
+	m.CreatedTime = time.Now().UTC()
 	return nil
 }

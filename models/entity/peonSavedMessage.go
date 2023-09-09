@@ -11,7 +11,7 @@ type PeonSavedMessage struct {
 	ChatId      int64          `gorm:"chat_id"`
 	MemberId    int64          `gorm:"member_id"`
 	MessageJson datatypes.JSON `gorm:"message_json"`
-	RecordDate  time.Time      `gorm:"record_date; type:timestamptz"`
+	RecordTime  time.Time      `gorm:"record_time; type:timestamptz"`
 }
 
 func (PeonSavedMessage) TableName() string {

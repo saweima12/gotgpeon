@@ -9,10 +9,10 @@ import (
 
 type PeonDeletedMessage struct {
 	ID          uint           `gorm:"primarykey"`
-	ChatId      int64          `gorm:"chat_id; index:chatid_un,unique"`
+	ChatId      int64          `gorm:"chat_id; index:chatid"`
 	ContentType string         `gorm:"content_type"`
 	MessageJson datatypes.JSON `gorm:"message_json"`
-	RecordDate  time.Time      `gorm:"record_date; type:timestamptz"`
+	RecordTime  time.Time      `gorm:"record_time; type:timestamptz"`
 }
 
 func (PeonDeletedMessage) TableName() string {
@@ -20,6 +20,6 @@ func (PeonDeletedMessage) TableName() string {
 }
 
 func (m *PeonDeletedMessage) BeforeCreate(tx *gorm.DB) (err error) {
-	m.RecordDate = time.Now().UTC()
+	m.RecordTime = time.Now().UTC()
 	return nil
 }

@@ -16,7 +16,7 @@ type PeonChatConfig struct {
 	JobConfig        datatypes.JSON `gorm:"job_conifg"`
 	PermissionConifg datatypes.JSON `gorm:"permission_config"`
 	AttachJson       datatypes.JSON `gorm:"attach_json"`
-	CreatedDate      time.Time      `gorm:"created_date; type:timestamptz"`
+	CreatedTime      time.Time      `gorm:"created_time; type:timestamptz"`
 }
 
 func (PeonChatConfig) TableName() string {
@@ -24,6 +24,6 @@ func (PeonChatConfig) TableName() string {
 }
 
 func (m *PeonChatConfig) BeforeCreate(tx *gorm.DB) (err error) {
-	m.CreatedDate = time.Now().UTC()
+	m.CreatedTime = time.Now().UTC()
 	return nil
 }
