@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gotgpeon/config"
 	"gotgpeon/logger"
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 	"gotgpeon/pkg/tgbot/core"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"

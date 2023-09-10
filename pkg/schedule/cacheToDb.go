@@ -2,7 +2,7 @@ package schedule
 
 import (
 	"gotgpeon/logger"
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 	"time"
 )
 
@@ -33,7 +33,7 @@ func (s *peonSchedule) CacheToDB() {
 		}
 
 		// Save userRecord to database and promote level
-		users := s.RecordService.GetAllUserRecord(chatId)
+		users := s.RecordService.GetAllCacheByChat(chatId)
 
 		delList := make([]int64, 0)
 		for _, user := range users {

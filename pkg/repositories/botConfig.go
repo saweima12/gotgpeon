@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"gotgpeon/logger"
-	"gotgpeon/models/entity"
+	"gotgpeon/data/entity"
 	"strconv"
 
 	"github.com/redis/go-redis/v9"

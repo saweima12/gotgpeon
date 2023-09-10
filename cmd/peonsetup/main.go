@@ -6,7 +6,7 @@ import (
 	"gotgpeon/config"
 	"gotgpeon/db"
 	"gotgpeon/logger"
-	"gotgpeon/models/entity"
+	"gotgpeon/data/entity"
 	"gotgpeon/pkg/tgbot"
 )
 

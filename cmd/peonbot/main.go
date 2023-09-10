@@ -8,8 +8,8 @@ import (
 	"gotgpeon/libs/gocc"
 	"gotgpeon/libs/timewheel"
 	"gotgpeon/logger"
-	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot"
+	"gotgpeon/pkg/tgbot/core"
 	"gotgpeon/utils"
 	"net/http"
 )
@@ -73,7 +73,7 @@ func main() {
 	}
 	defer tgbot.DeleteWebhook(botClient)
 
-	var client *models.TgbotUpdateProcess
+	var client *core.TgbotUpdateProcess
 	// Add Webhook route and launche update process.
 	if cfg.TgBot.UpdateMode == "webhook" {
 		client = tgbot.StartWebhookProcess(cfg.TgBot.BotToken, botClient)

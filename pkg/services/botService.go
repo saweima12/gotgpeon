@@ -1,9 +1,9 @@
 package services
 
 import (
+	"gotgpeon/data/models"
 	"gotgpeon/libs/timewheel"
 	"gotgpeon/logger"
-	"gotgpeon/models"
 	"gotgpeon/pkg/tgbot/boterr"
 	"time"
 

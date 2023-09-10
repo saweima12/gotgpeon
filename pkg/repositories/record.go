@@ -3,10 +3,10 @@ package repositories
 import (
 	"errors"
 	"fmt"
+	"gotgpeon/data/entity"
+	"gotgpeon/data/models"
 	"gotgpeon/libs/json"
 	"gotgpeon/logger"
-	"gotgpeon/models"
-	"gotgpeon/models/entity"
 	"strconv"
 
 	"github.com/redis/go-redis/v9"
@@ -16,6 +16,7 @@ import (
 
 type RecordRepository interface {
 	GetAllUserRecordCache(chatId int64) (result map[int64]*models.MessageRecord, err error)
+	GetAllUserRecord(chatId int64) (result map[int64]*models.MessageRecord, err error)
 	GetUserRecord(chatId int64, query *models.MessageRecord) (result *models.MessageRecord, err error)
 	SetUserRecordCache(chatId int64, record *models.MessageRecord) error
 	SetUserRecordDB(chatId int64, record *models.MessageRecord) error
@@ -57,6 +58,17 @@ func (repo *recordRepository) GetAllUserRecordCache(chatId int64) (result map[in
 	}
 
 	return result, nil
+}
+
+func (repo *recordRepository) GetAllUserRecord(chatId int64) (result map[int64]*models.MessageRecord, err error) {
+	// TODO: Implement
+	// relation := entity.PeonMemberRecord{}
+	//
+	// db := repo.GetDB()
+	// query := db.Where("chat_id = ?", chatId).
+	// 	InnerJoins(memberTable.TableName(), db.Where(memberTable)).Find()
+	//
+	return nil, nil
 }
 
 func (repo *recordRepository) GetUserRecord(chatId int64, query *models.MessageRecord) (result *models.MessageRecord, err error) {

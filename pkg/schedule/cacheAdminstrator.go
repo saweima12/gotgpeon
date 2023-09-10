@@ -2,7 +2,7 @@ package schedule
 
 import (
 	"gotgpeon/logger"
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -61,7 +61,7 @@ func (s *peonSchedule) CacheAdminstrator() {
 				MemberId: mId,
 				FullName: mName,
 			}
-			record := s.RecordService.GetUserRecord(chatId, &query)
+			record := s.RecordService.GetUserRecordByCaht(chatId, &query)
 			record.FullName = mName
 
 			err = s.RecordService.SetUserRecordCache(chatId, record)

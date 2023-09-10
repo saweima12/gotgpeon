@@ -13,8 +13,8 @@ type PeonChatConfig struct {
 	Status           int            `gorm:"status; type:int2"`
 	ChatName         string         `gorm:"chat_name"`
 	Config           datatypes.JSON `gorm:"config"`
-	JobConfig        datatypes.JSON `gorm:"job_conifg"`
-	PermissionConifg datatypes.JSON `gorm:"permission_config"`
+	JobConfig        datatypes.JSON `gorm:"job_config"`
+	PermissionConfig datatypes.JSON `gorm:"permission_config"`
 	AttachJson       datatypes.JSON `gorm:"attach_json"`
 	CreatedTime      time.Time      `gorm:"created_time; type:timestamptz"`
 }

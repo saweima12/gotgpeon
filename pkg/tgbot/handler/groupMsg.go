@@ -6,7 +6,7 @@ import (
 	"gotgpeon/libs/ants"
 	"gotgpeon/libs/json"
 	"gotgpeon/logger"
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 	"gotgpeon/pkg/tgbot/core"
 	"time"
 

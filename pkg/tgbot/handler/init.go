@@ -4,7 +4,7 @@ import (
 	"gotgpeon/config"
 	"gotgpeon/libs/json"
 	"gotgpeon/logger"
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 	"gotgpeon/pkg/repositories"
 	"gotgpeon/pkg/services"
 	"gotgpeon/pkg/tgbot/checker"
@@ -37,7 +37,7 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client, botAPI *tgbotap
 	deletedMsgRepo := repositories.NewDeletedMsgRepository(dbConn, cacheConn)
 
 	// Initialize Services
-	peonService := services.NewPeonService(chatRepo, botRepo, deletedMsgRepo)
+	peonService := services.NewPeonService(chatRepo, botRepo)
 	recordService := services.NewRecordService(recordRepo)
 	botService := services.NewBotService(botAPI)
 	deletedService := services.NewDeletedService(deletedMsgRepo)
@@ -96,7 +96,7 @@ func (h *messageHandler) getMessageContext(helper *core.MessageHelper, chatCfg *
 		MemberId: userId,
 		FullName: helper.FullName(),
 	}
-	userRecord := h.recordService.GetUserRecord(chatId, recordQuery)
+	userRecord := h.recordService.GetUserRecordByCaht(chatId, recordQuery)
 	// Get serviceConfig.
 	commonCfg := config.GetConfig().Common
 

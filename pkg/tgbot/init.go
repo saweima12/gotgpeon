@@ -6,7 +6,7 @@ import (
 	"gotgpeon/config"
 	"gotgpeon/db"
 	"gotgpeon/logger"
-	"gotgpeon/models"
+	"gotgpeon/pkg/tgbot/core"
 	"gotgpeon/pkg/tgbot/handler"
 	"gotgpeon/utils"
 	"net/http"
@@ -32,12 +32,12 @@ func InitTgBot(cfg *config.TgBotConfig) (*tgbotapi.BotAPI, error) {
 }
 
 // Start to revice and handle message from webhook
-func StartWebhookProcess(botToken string, botAPI *tgbotapi.BotAPI) *models.TgbotUpdateProcess {
+func StartWebhookProcess(botToken string, botAPI *tgbotapi.BotAPI) *core.TgbotUpdateProcess {
 	// Get update channel.
 	ch := botAPI.ListenForWebhook("/" + botToken)
 
 	// Get updateProcess instance.
-	process := models.TgbotUpdateProcess{
+	process := core.TgbotUpdateProcess{
 		BotAPI:     botAPI,
 		QuitChan:   make(chan struct{}),
 		UpdateChan: ch,
@@ -48,12 +48,12 @@ func StartWebhookProcess(botToken string, botAPI *tgbotapi.BotAPI) *models.Tgbot
 }
 
 // Start to revice and handle message from longpoll
-func StartLongPollProcess(botAPI *tgbotapi.BotAPI) *models.TgbotUpdateProcess {
+func StartLongPollProcess(botAPI *tgbotapi.BotAPI) *core.TgbotUpdateProcess {
 
 	upCfg := tgbotapi.NewUpdate(0)
 	ch := botAPI.GetUpdatesChan(upCfg)
 
-	process := models.TgbotUpdateProcess{
+	process := core.TgbotUpdateProcess{
 		BotAPI:     botAPI,
 		UpdateChan: ch,
 	}
@@ -102,7 +102,7 @@ func ProcessUpdate(msgHandler handler.MessageHandler, update tgbotapi.Update, bo
 	}
 }
 
-func runUpdateProcess(c *models.TgbotUpdateProcess, botAPI *tgbotapi.BotAPI) {
+func runUpdateProcess(c *core.TgbotUpdateProcess, botAPI *tgbotapi.BotAPI) {
 	dbConn := db.GetDB()
 	cacheConn := db.GetCache()
 	// Create handler.

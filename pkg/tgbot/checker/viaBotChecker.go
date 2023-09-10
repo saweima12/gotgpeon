@@ -2,7 +2,7 @@ package checker
 
 import (
 	"gotgpeon/config"
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 	"gotgpeon/pkg/tgbot/core"
 	"gotgpeon/utils/sliceutil"
 )

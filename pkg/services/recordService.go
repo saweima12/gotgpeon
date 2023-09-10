@@ -2,14 +2,15 @@ package services
 
 import (
 	"gotgpeon/logger"
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 	"gotgpeon/pkg/repositories"
 	"strconv"
 )
 
 type RecordService interface {
-	GetAllUserRecord(chatId int64) map[int64]*models.MessageRecord
-	GetUserRecord(chatId int64, query *models.MessageRecord) *models.MessageRecord
+	GetAllCacheByChat(chatId int64) map[int64]*models.MessageRecord
+	GetAllRecordByChat(chatId int64) map[int64]*models.MessageRecord
+	GetUserRecordByCaht(chatId int64, query *models.MessageRecord) *models.MessageRecord
 	SetUserRecordCache(chatId int64, record *models.MessageRecord) error
 	SetUserRecordDB(chatId int64, record *models.MessageRecord) error
 	DelCacheByMemberIds(chatId int64, memberIdList []int64) error
@@ -25,7 +26,7 @@ func NewRecordService(recordRepo repositories.RecordRepository) RecordService {
 	}
 }
 
-func (s *recordService) GetAllUserRecord(chatId int64) map[int64]*models.MessageRecord {
+func (s *recordService) GetAllCacheByChat(chatId int64) map[int64]*models.MessageRecord {
 	records, err := s.RecordRepo.GetAllUserRecordCache(chatId)
 	if err != nil {
 		logger.Errorf("GetAllUserRecord err: %s", err.Error())
@@ -34,7 +35,11 @@ func (s *recordService) GetAllUserRecord(chatId int64) map[int64]*models.Message
 	return records
 }
 
-func (s *recordService) GetUserRecord(chatId int64, query *models.MessageRecord) *models.MessageRecord {
+func (s *recordService) GetAllRecordByChat(chatId int64) map[int64]*models.MessageRecord {
+	panic("not implemented") // TODO: Implement
+}
+
+func (s *recordService) GetUserRecordByCaht(chatId int64, query *models.MessageRecord) *models.MessageRecord {
 	record, err := s.RecordRepo.GetUserRecord(chatId, query)
 
 	if err != nil {

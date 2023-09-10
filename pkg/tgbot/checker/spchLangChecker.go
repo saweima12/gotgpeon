@@ -3,7 +3,7 @@ package checker
 import (
 	"gotgpeon/config"
 	"gotgpeon/libs/gocc"
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 	"gotgpeon/pkg/tgbot/core"
 	"regexp"
 	"strings"

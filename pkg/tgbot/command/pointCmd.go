@@ -1,7 +1,7 @@
 package command
 
 import (
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 	"gotgpeon/pkg/tgbot/core"
 	"strconv"
 	"time"
@@ -26,7 +26,7 @@ func (h *CommandMap) handlePointCmd(helper *core.MessageHelper) {
 		FullName: helper.FullName(),
 	}
 	// Create tips message.
-	userRecord := h.RecordService.GetUserRecord(chatId, query)
+	userRecord := h.RecordService.GetUserRecordByCaht(chatId, query)
 
 	text := "Point: " + strconv.Itoa(userRecord.Point)
 	newMsg := tgbotapi.NewMessage(helper.ChatId(), text)

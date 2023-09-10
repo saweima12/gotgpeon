@@ -3,7 +3,7 @@ package services
 import (
 	"gotgpeon/libs/json"
 	"gotgpeon/logger"
-	"gotgpeon/models/entity"
+	"gotgpeon/data/entity"
 	"gotgpeon/pkg/repositories"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"

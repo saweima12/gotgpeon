@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gotgpeon/config"
 	"gotgpeon/logger"
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 	"gotgpeon/pkg/tgbot/core"
 	"strings"
 	"time"
@@ -42,7 +42,7 @@ func (h *CommandMap) handleSetLevelCmd(helper *core.MessageHelper) {
 		FullName: targetName,
 	}
 	// set memberlevel & save
-	userRecord := h.RecordService.GetUserRecord(chatId, &query)
+	userRecord := h.RecordService.GetUserRecordByCaht(chatId, &query)
 	userRecord.MemberLevel = level
 	userRecord.FullName = targetName
 

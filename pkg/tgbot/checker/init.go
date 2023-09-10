@@ -1,7 +1,7 @@
 package checker
 
 import (
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 	"gotgpeon/pkg/tgbot/core"
 )
 

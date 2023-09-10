@@ -2,7 +2,7 @@ package services
 
 import (
 	"gotgpeon/logger"
-	"gotgpeon/models"
+	"gotgpeon/data/models"
 	"gotgpeon/pkg/repositories"
 )
 
@@ -19,20 +19,17 @@ type PeonService interface {
 }
 
 type peonService struct {
-	chatRepo       repositories.ChatRepository
-	botRepo        repositories.BotConfigRepository
-	deletedMsgRepo repositories.DeletedMsgRepository
+	chatRepo repositories.ChatRepository
+	botRepo  repositories.BotConfigRepository
 }
 
 func NewPeonService(
 	chatRepo repositories.ChatRepository,
 	botRepo repositories.BotConfigRepository,
-	deletedMsgRepo repositories.DeletedMsgRepository,
 ) PeonService {
 	return &peonService{
-		chatRepo:       chatRepo,
-		botRepo:        botRepo,
-		deletedMsgRepo: deletedMsgRepo,
+		chatRepo: chatRepo,
+		botRepo:  botRepo,
 	}
 }
 

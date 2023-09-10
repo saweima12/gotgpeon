@@ -2,9 +2,9 @@ package repositories
 
 import (
 	"fmt"
+	"gotgpeon/data/entity"
+	"gotgpeon/data/models"
 	"gotgpeon/logger"
-	"gotgpeon/models"
-	"gotgpeon/models/entity"
 
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
