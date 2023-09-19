@@ -3,6 +3,7 @@ package repositories
 import (
 	"errors"
 	"fmt"
+	"gotgpeon/data/complex"
 	"gotgpeon/data/entity"
 	"gotgpeon/data/models"
 	"gotgpeon/libs/json"
@@ -16,7 +17,7 @@ import (
 
 type RecordRepository interface {
 	GetAllUserRecordCache(chatId int64) (result map[int64]*models.MessageRecord, err error)
-	GetAllUserRecord(chatId int64) (result map[int64]*models.MessageRecord, err error)
+	GetAllUserRecord(chatId int64) (result []*complex.ChatMemberResult, err error)
 	GetUserRecord(chatId int64, query *models.MessageRecord) (result *models.MessageRecord, err error)
 	SetUserRecordCache(chatId int64, record *models.MessageRecord) error
 	SetUserRecordDB(chatId int64, record *models.MessageRecord) error
@@ -60,15 +61,23 @@ func (repo *recordRepository) GetAllUserRecordCache(chatId int64) (result map[in
 	return result, nil
 }
 
-func (repo *recordRepository) GetAllUserRecord(chatId int64) (result map[int64]*models.MessageRecord, err error) {
-	// TODO: Implement
-	// relation := entity.PeonMemberRecord{}
-	//
-	// db := repo.GetDB()
-	// query := db.Where("chat_id = ?", chatId).
-	// 	InnerJoins(memberTable.TableName(), db.Where(memberTable)).Find()
-	//
-	return nil, nil
+func (repo *recordRepository) GetAllUserRecord(chatId int64) (result []*complex.ChatMemberResult, err error) {
+	db := repo.GetDB()
+	subQuery := db.Table(entity.PeonChatMemberRecord{}.TableName()).
+		Select("chat_id, member_id, msg_count,  update_time").
+		Where("chat_id = ?", chatId)
+
+	err = db.Table(entity.PeonMemberRecord{}.TableName()+" AS mr").
+		Select("cmr.chat_id, mr.full_name, cmr.member_id, cmr.msg_count, cmr.update_time").
+		Joins("INNER JOIN (?) AS cmr ON cmr.member_id = mr.member_id", subQuery).
+		Find(&result).Error
+
+	if err != nil {
+		logger.Errorf("GetAllUserRecord from db err: %s", err.Error())
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (repo *recordRepository) GetUserRecord(chatId int64, query *models.MessageRecord) (result *models.MessageRecord, err error) {

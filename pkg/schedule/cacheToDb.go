@@ -1,8 +1,8 @@
 package schedule
 
 import (
-	"gotgpeon/logger"
 	"gotgpeon/data/models"
+	"gotgpeon/logger"
 	"time"
 )
 
@@ -11,8 +11,12 @@ func (s *peonSchedule) CacheToDB() {
 	logger.Info("CacheToDb Job Start")
 	now := time.Now().UTC()
 
-	chatIdList := s.ChatRepo.GetAvaliableChatIds()
-	for _, chatId := range chatIdList {
+	chatIdList, err := s.ChatRepo.GetAvaliableChatList()
+	if err != nil {
+		logger.Error("CacheToDB db err:" + err.Error())
+	}
+
+	for chatId := range chatIdList {
 		// Save chatConfig to database
 		chatCfg, err := s.ChatRepo.GetChatCfg(chatId)
 		if err != nil {

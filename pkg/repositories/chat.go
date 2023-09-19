@@ -14,7 +14,7 @@ import (
 )
 
 type ChatRepository interface {
-	GetAvaliableChatIds() []int64
+	GetAvaliableChatList() (map[int64]string, error)
 	GetChatCfg(chatId int64) (*models.ChatConfig, error)
 	SetChatCfgCache(chatId int64, value *models.ChatConfig) error
 
@@ -33,18 +33,26 @@ func NewChatRepo(dbConn *gorm.DB, redisConn *redis.Client) ChatRepository {
 	}
 }
 
-func (repo *chatRepository) GetAvaliableChatIds() []int64 {
-	var result []int64
+func (repo *chatRepository) GetAvaliableChatList() (result map[int64]string, err error) {
+	// declare result
+	result = make(map[int64]string)
 
+	// declare query
+	var resp []*entity.PeonChatConfig
 	query := entity.PeonChatConfig{}
-	err := repo.GetDB().Table(query.TableName()).
-		Select("chat_id").Where("status = ?", 1).Find(&result).Error
+	err = repo.GetDB().Table(query.TableName()).
+		Select("chat_id, chat_name").Where("status = ?", 1).Find(&resp).Error
 	if err != nil {
 		logger.Errorf("GetAvaliableChatIds err: %s", err.Error())
-		return nil
+		return nil, err
 	}
 
-	return result
+	// process to map[int64]string
+	for _, datum := range resp {
+		result[datum.ChatId] = datum.ChatName
+	}
+
+	return result, nil
 }
 
 // Load GroupChat Configuration.

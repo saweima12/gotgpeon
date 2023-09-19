@@ -16,18 +16,18 @@ func InitRouter(x *gin.Engine) {
 	// declare repository
 	chatRepo := repositories.NewChatRepo(db, rdb)
 	deletedMsgRepo := repositories.NewDeletedMsgRepository(db, rdb)
-	botRepo := repositories.NewBotConfigRepo(db, rdb)
+	recordRepo := repositories.NewRecordRepository(db, rdb)
 
 	// declare services.
-	peonServ := services.NewPeonService(chatRepo, botRepo)
 	deletedServ := services.NewDeletedService(deletedMsgRepo)
+	dataviewServ := services.NewDataviewService(chatRepo, recordRepo)
 
 	// declare controller
-	dataviewCon := controller.NewDataViewController(peonServ, deletedServ)
+	dataviewCon := controller.NewDataViewController(deletedServ, dataviewServ)
 
 	// define router.
 	dataview := x.Group("/dataview")
-	dataview.GET("/chats", dataviewCon.GetAllChats)
+	dataview.GET("/chats", dataviewCon.GetChatList)
 	dataview.GET("/chats/:chat_id/members", dataviewCon.GetChatMembers)
 	dataview.GET("/chats/:chat_id/deletedmsg", dataviewCon.GetChatDeleteMsgs)
 }

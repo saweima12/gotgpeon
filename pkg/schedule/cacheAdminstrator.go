@@ -1,8 +1,8 @@
 package schedule
 
 import (
-	"gotgpeon/logger"
 	"gotgpeon/data/models"
+	"gotgpeon/logger"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -10,8 +10,12 @@ import (
 func (s *peonSchedule) CacheAdminstrator() {
 	logger.Info("CacheAdminstrator Job Start")
 
-	chatIds := s.ChatRepo.GetAvaliableChatIds()
-	for _, chatId := range chatIds {
+	chatIds, err := s.ChatRepo.GetAvaliableChatList()
+	if err != nil {
+		logger.Error("CacheAdminstrator get db err:" + err.Error())
+		return
+	}
+	for chatId := range chatIds {
 		// Get ChatAdminstrators from telegram
 		members, err := s.BotAPI.GetChatAdministrators(tgbotapi.ChatAdministratorsConfig{
 			ChatConfig: tgbotapi.ChatConfig{ChatID: chatId},

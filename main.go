@@ -9,7 +9,6 @@ import (
 
 func main() {
 	var list []string
-
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	<-c

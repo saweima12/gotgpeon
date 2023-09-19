@@ -1,15 +1,14 @@
 package services
 
 import (
-	"gotgpeon/logger"
 	"gotgpeon/data/models"
+	"gotgpeon/logger"
 	"gotgpeon/pkg/repositories"
 	"strconv"
 )
 
 type RecordService interface {
 	GetAllCacheByChat(chatId int64) map[int64]*models.MessageRecord
-	GetAllRecordByChat(chatId int64) map[int64]*models.MessageRecord
 	GetUserRecordByCaht(chatId int64, query *models.MessageRecord) *models.MessageRecord
 	SetUserRecordCache(chatId int64, record *models.MessageRecord) error
 	SetUserRecordDB(chatId int64, record *models.MessageRecord) error
@@ -33,10 +32,6 @@ func (s *recordService) GetAllCacheByChat(chatId int64) map[int64]*models.Messag
 		return nil
 	}
 	return records
-}
-
-func (s *recordService) GetAllRecordByChat(chatId int64) map[int64]*models.MessageRecord {
-	panic("not implemented") // TODO: Implement
 }
 
 func (s *recordService) GetUserRecordByCaht(chatId int64, query *models.MessageRecord) *models.MessageRecord {
