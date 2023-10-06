@@ -1,14 +1,14 @@
 package services
 
 import (
-	"gotgpeon/data/complex"
+	"gotgpeon/data/models"
 	"gotgpeon/logger"
 	"gotgpeon/pkg/repositories"
 )
 
 type DataviewService interface {
 	GetChatList() map[int64]string
-	GetMemberListByChat(chatId int64) []*complex.ChatMemberResult
+	GetMemberListByChat(chatId int64) []*models.ChatMemberResult
 	GetDeletedMsgListByChat(chatId int64)
 }
 
@@ -36,11 +36,11 @@ func (da *dataviewService) GetChatList() map[int64]string {
 	return result
 }
 
-func (da *dataviewService) GetMemberListByChat(chatId int64) []*complex.ChatMemberResult {
+func (da *dataviewService) GetMemberListByChat(chatId int64) []*models.ChatMemberResult {
 	result, err := da.recordRepo.GetAllUserRecord(chatId)
 	if err != nil {
 		logger.Error("GetMemberListByChat err:", err.Error())
-		return []*complex.ChatMemberResult{}
+		return []*models.ChatMemberResult{}
 	}
 	return result
 }

@@ -6,3 +6,6 @@ err_content_nozhtw: "新進人員請使用正體中文進行溝通。"
 err_name_block: "使用者名稱包含禁止字元。"
 err_media_content: "包含多媒體訊息。"
 err_forward: "轉發訊息。"
+
+
+act_vban_markup: ""

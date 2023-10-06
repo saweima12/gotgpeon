@@ -8,4 +8,5 @@ type TextLang struct {
 	ErrNameBlock         string `yaml:"err_name_block"`
 	ErrTypeMedia         string `yaml:"err_media_content"`
 	ErrForward           string `yaml:"err_forward"`
+	ActVbanMarkup        string `yaml:"act_vban_markup"`
 }

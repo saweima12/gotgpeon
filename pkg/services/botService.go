@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+	"gotgpeon/config"
 	"gotgpeon/data/models"
 	"gotgpeon/libs/timewheel"
 	"gotgpeon/logger"
@@ -22,7 +24,8 @@ func (t *delayDeleteTask) Run() {
 }
 
 type BotService interface {
-	SendMessage(message tgbotapi.Chattable, duration time.Duration)
+	SendMessage(message tgbotapi.Chattable, duration time.Duration) (msgId int)
+	SendVbanMarkup(chatId int64, memberId int64, memberName string) (msgId int)
 	DeleteMessageById(chatId int64, messageId int)
 	SetPermission(chatId int64, userId int64, level int, until_date int64) error
 }
@@ -37,7 +40,7 @@ func NewBotService(botAPI *tgbotapi.BotAPI) BotService {
 	}
 }
 
-func (s *botService) SendMessage(message tgbotapi.Chattable, duration time.Duration) {
+func (s *botService) SendMessage(message tgbotapi.Chattable, duration time.Duration) (msgId int) {
 	resultMsg, err := s.BotAPI.Send(message)
 
 	if err != nil {
@@ -54,11 +57,11 @@ func (s *botService) SendMessage(message tgbotapi.Chattable, duration time.Durat
 		}
 		timewheel.AddTask(duration, task)
 	}
+	return resultMsg.MessageID
 }
 
 func (s *botService) DeleteMessageById(chatId int64, messageId int) {
 	deleteReq := tgbotapi.NewDeleteMessage(chatId, messageId)
-
 	s.sendDeleteReq(deleteReq)
 }
 
@@ -77,6 +80,17 @@ func (s *botService) SetPermission(chatId int64, userId int64, level int, until_
 	}
 
 	return nil
+}
+
+func (s *botService) SendVbanMarkup(chatId int64, memberId int64, memberName string) (msgId int) {
+	msg := getVbanMessage(chatId, memberId, memberName)
+	resp, err := s.BotAPI.Send(msg)
+	if err != nil {
+		logger.Errorf("SetVbanMarkup err: %s", err.Error())
+		return
+	}
+
+	return resp.MessageID
 }
 
 func (s *botService) sendDeleteReq(deleteReq tgbotapi.Chattable) {
@@ -112,4 +126,25 @@ func getChatPermissionByLevel(level int) *tgbotapi.ChatPermissions {
 	}
 
 	return result
+}
+
+func getVbanMessage(chatId int64, memberId int64, memberName string) *tgbotapi.MessageConfig {
+	tplStr := config.GetTextLang().ActVbanMarkup
+	text := fmt.Sprintf(tplStr, chatId, memberId, memberName)
+
+	markup := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Wee", "wwee"),
+		),
+	)
+
+	return &tgbotapi.MessageConfig{
+		BaseChat: tgbotapi.BaseChat{
+			ChatID:      chatId,
+			ReplyMarkup: markup,
+		},
+		ParseMode:             tgbotapi.ModeMarkdown,
+		Text:                  text,
+		DisableWebPagePreview: false,
+	}
 }
