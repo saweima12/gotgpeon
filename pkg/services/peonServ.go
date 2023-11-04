@@ -1,8 +1,8 @@
 package services
 
 import (
-	"gotgpeon/logger"
 	"gotgpeon/data/models"
+	"gotgpeon/logger"
 	"gotgpeon/pkg/repositories"
 )
 
@@ -71,6 +71,10 @@ func (s *peonService) UpdateChatConfigDB(chatId int64) error {
 	newJobCfg := s.GetChatJobConfig(chatId)
 	s.chatRepo.UpdateChatCfgDB(chatId, newCfg, newJobCfg)
 
+	return nil
+}
+
+func (s *peonService) SubmitVote() error {
 	return nil
 }
 

@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"gotgpeon/logger"
 	"gotgpeon/data/entity"
+	"gotgpeon/logger"
 	"strconv"
 
 	"github.com/redis/go-redis/v9"
@@ -106,9 +106,9 @@ func (repo *botConfigRepository) SetAllowlistDBWithUserId(memberId int64, isEnab
 	return nil
 }
 
-// / ====
-// / Support Function
-// / ====
+// ====
+// Support Function
+// ====
 func sliceToMapSet[T int | int64 | string](slice []T) map[T]byte {
 	var result map[T]byte
 	for _, v := range slice {
