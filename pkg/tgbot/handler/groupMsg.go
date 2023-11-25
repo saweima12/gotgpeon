@@ -3,10 +3,10 @@ package handler
 import (
 	"fmt"
 	"gotgpeon/config"
+	"gotgpeon/data/models"
 	"gotgpeon/libs/ants"
 	"gotgpeon/libs/json"
 	"gotgpeon/logger"
-	"gotgpeon/data/models"
 	"gotgpeon/pkg/tgbot/core"
 	"time"
 
@@ -25,7 +25,7 @@ func (h *messageHandler) handleGroupMessage(helper *core.MessageHelper) {
 	}
 
 	ctx := h.getMessageContext(helper, chatCfg)
-	result := h.checker.CheckMessage(helper, ctx)
+	result := h.checker.CheckMessage(ctx)
 
 	if result.MarkDelete {
 		h.handleDeleteMessage(helper, result.Message)
@@ -47,14 +47,14 @@ func (h *messageHandler) handleDeleteMessage(helper *core.MessageHelper, text st
 		// print log
 		jsonStr, err := json.MarshalToString(helper.Message)
 		if err != nil {
-			logger.Errorf("handleDeleteMessage err: %v", helper)
+			logger.Errorf("[handleDeleteMessage] err: %v", helper)
 		}
-		logger.Infof("DeleteMessage: %s", jsonStr)
+		logger.Infof("[DeleteMessage]: %s", jsonStr)
 
 		// Insert into database
 		err = h.deletedService.InsertDeletedRecord(helper.ChatId(), helper.ContentType(), helper.Message)
 		if err != nil {
-			logger.Errorf("handleDeleteMessage insertIntoDb err: %s", err.Error())
+			logger.Errorf("[handleDeleteMessage] insertIntoDb err: %s", err.Error())
 		}
 
 		// send delete request.

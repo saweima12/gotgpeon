@@ -1,18 +1,18 @@
 package checker
 
 import (
+	"encoding/json"
 	"gotgpeon/config"
 	"gotgpeon/data/models"
-	"gotgpeon/pkg/tgbot/core"
 	"regexp"
 )
 
 var MePtn = regexp.MustCompile("[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF]")
 
-func (c *MessageChecker) CheckContentNoMelang(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
-	if helper.Text != "" {
+func (c *MessageChecker) CheckContentNoMelang(ctx *models.MessageContext, result *CheckResult, parameter json.RawMessage) bool {
+	if ctx.Message.Text != "" {
 		// check middle east language.
-		if MePtn.MatchString(helper.Text) {
+		if MePtn.MatchString(ctx.Message.Text) {
 			result.MarkDelete = true
 			result.Message = config.GetTextLang().ErrContentNozhtw
 			return false
@@ -21,9 +21,9 @@ func (c *MessageChecker) CheckContentNoMelang(helper *core.MessageHelper, ctx *m
 	return true
 }
 
-func (c *MessageChecker) CheckNameNoMelang(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
+func (c *MessageChecker) CheckNameNoMelang(ctx *models.MessageContext, result *CheckResult, parameter json.RawMessage) bool {
 
-	if MePtn.MatchString(helper.FullName()) {
+	if MePtn.MatchString(ctx.Message.FullName()) {
 		result.MarkDelete = true
 		result.Message = config.GetTextLang().ErrNameBlock
 		return false

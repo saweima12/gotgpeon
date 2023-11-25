@@ -1,10 +1,13 @@
 package models
 
-import "gotgpeon/utils/sliceutil"
+import (
+	"encoding/json"
+	"gotgpeon/utils/sliceutil"
+)
 
 type CheckerConfig struct {
-	Name      string      `json:"name"`
-	Parameter interface{} `json:"parameter,omitempty"`
+	Name      string          `json:"name"`
+	Parameter json.RawMessage `json:"parameter,omitempty"`
 }
 
 type ChatConfig struct {

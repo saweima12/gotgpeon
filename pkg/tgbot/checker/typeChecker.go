@@ -1,14 +1,15 @@
 package checker
 
 import (
+	"encoding/json"
 	"gotgpeon/config"
 	"gotgpeon/data/models"
 	"gotgpeon/pkg/tgbot/core"
 	"gotgpeon/utils/sliceutil"
 )
 
-func (c *MessageChecker) CheckNoForward(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
-	if helper.IsForward() {
+func (c *MessageChecker) CheckNoForward(ctx *models.MessageContext, result *CheckResult, parameter json.RawMessage) bool {
+	if ctx.Message.IsForward() {
 		result.MarkDelete = true
 		result.Message = config.GetTextLang().ErrForward
 		return false
@@ -18,8 +19,10 @@ func (c *MessageChecker) CheckNoForward(helper *core.MessageHelper, ctx *models.
 }
 
 // Check the message for any issues and return whether to continue the inspection.
-func (c *MessageChecker) CheckTypeNoMedia(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
+func (c *MessageChecker) CheckTypeNoMedia(ctx *models.MessageContext, result *CheckResult, parameter json.RawMessage) bool {
 	// check message type
+	helper := ctx.Message
+
 	if ctx.Record.MemberLevel >= models.LIMIT {
 		if c.checkLimitUserOK(helper, ctx) {
 			result.MarkDelete = false

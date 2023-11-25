@@ -1,20 +1,20 @@
 package checker
 
 import (
+	"encoding/json"
 	"gotgpeon/config"
-	"gotgpeon/libs/gocc"
 	"gotgpeon/data/models"
-	"gotgpeon/pkg/tgbot/core"
+	"gotgpeon/libs/gocc"
 	"regexp"
 	"strings"
 )
 
 var ChPtn = regexp.MustCompile("[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]")
 
-func (c *MessageChecker) CheckContentNoSpchLang(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
-	if helper.Text != "" {
+func (c *MessageChecker) CheckContentNoSpchLang(ctx *models.MessageContext, result *CheckResult, parameter json.RawMessage) bool {
+	if ctx.Message.Text != "" {
 		// check spchinese
-		if !checkSpChineseOK(helper.Text, 2) {
+		if !checkSpChineseOK(ctx.Message.Text, 2) {
 			result.MarkDelete = true
 			result.Message = config.GetTextLang().ErrContentNozhtw
 			return false
@@ -24,8 +24,8 @@ func (c *MessageChecker) CheckContentNoSpchLang(helper *core.MessageHelper, ctx 
 	return true
 }
 
-func (c *MessageChecker) CheckNameNospchLang(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
-	if !checkSpChineseOK(helper.FullName(), 1) {
+func (c *MessageChecker) CheckNameNospchLang(ctx *models.MessageContext, result *CheckResult, parameter json.RawMessage) bool {
+	if !checkSpChineseOK(ctx.Message.FullName(), 1) {
 		// Check sender name
 		result.MarkDelete = true
 		result.Message = config.GetTextLang().ErrNameBlock

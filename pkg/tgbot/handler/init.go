@@ -2,9 +2,9 @@ package handler
 
 import (
 	"gotgpeon/config"
+	"gotgpeon/data/models"
 	"gotgpeon/libs/json"
 	"gotgpeon/logger"
-	"gotgpeon/data/models"
 	"gotgpeon/pkg/repositories"
 	"gotgpeon/pkg/services"
 	"gotgpeon/pkg/tgbot/checker"
@@ -103,6 +103,7 @@ func (h *messageHandler) getMessageContext(helper *core.MessageHelper, chatCfg *
 	return &models.MessageContext{
 		ChatCfg:     chatCfg,
 		CommonCfg:   &commonCfg,
+		Message:     helper,
 		IsWhitelist: isAllowlist,
 		Record:      userRecord,
 	}

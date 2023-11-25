@@ -1,15 +1,15 @@
 package checker
 
 import (
+	"encoding/json"
 	"gotgpeon/config"
 	"gotgpeon/data/models"
-	"gotgpeon/pkg/tgbot/core"
 	"gotgpeon/utils/sliceutil"
 )
 
-func (c *MessageChecker) CheckViabotOK(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter any) bool {
-	if helper.ViaBot != nil {
-		botUsername := helper.ViaBot.UserName
+func (c *MessageChecker) CheckViabotOK(ctx *models.MessageContext, result *CheckResult, parameter json.RawMessage) bool {
+	if ctx.Message.ViaBot != nil {
+		botUsername := ctx.Message.ViaBot.UserName
 		allowViaList := config.GetConfig().Common.AllowViaBots
 		if !sliceutil.Contains(botUsername, allowViaList) {
 			result.MarkDelete = true

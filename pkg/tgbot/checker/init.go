@@ -1,12 +1,12 @@
 package checker
 
 import (
+	"encoding/json"
 	"gotgpeon/data/models"
-	"gotgpeon/pkg/tgbot/core"
 )
 
 type CheckerHandler interface {
-	CheckMessage(helper *core.MessageHelper, ctx *models.MessageContext) *CheckResult
+	CheckMessage(ctx *models.MessageContext) *CheckResult
 }
 
 type CheckResult struct {
@@ -16,16 +16,13 @@ type CheckResult struct {
 }
 
 type MessageChecker struct {
-	checkerMap map[string]func(
-		helper *core.MessageHelper,
-		ctx *models.MessageContext,
-		result *CheckResult,
-		parameter interface{},
-	) bool
+	checkerMap map[string]CheckHandlerFunc
 }
 
+type CheckHandlerFunc func(ctx *models.MessageContext, result *CheckResult, parameter json.RawMessage) bool
+
 func (c *MessageChecker) Init() {
-	c.checkerMap = map[string]func(helper *core.MessageHelper, ctx *models.MessageContext, result *CheckResult, parameter interface{}) bool{
+	c.checkerMap = map[string]CheckHandlerFunc{
 		"Type":          c.CheckTypeNoMedia,
 		"Forward":       c.CheckNoForward,
 		"Entities":      c.CheckEntitiesOK,
@@ -37,7 +34,7 @@ func (c *MessageChecker) Init() {
 	}
 }
 
-func (c *MessageChecker) CheckMessage(helper *core.MessageHelper, ctx *models.MessageContext) *CheckResult {
+func (c *MessageChecker) CheckMessage(ctx *models.MessageContext) *CheckResult {
 	result := &CheckResult{
 		MarkDelete: false,
 		MarkRecord: true,
@@ -49,12 +46,10 @@ func (c *MessageChecker) CheckMessage(helper *core.MessageHelper, ctx *models.Me
 	}
 
 	// Check message need to delete?
-	for _, cfg := range ctx.ChatCfg.CheckerList {
-		if checkFunc, ok := c.checkerMap[cfg.Name]; ok {
-			isNext := checkFunc(helper, ctx, result, cfg.Parameter)
-			if !isNext {
-				break
-			}
+	for _, checkFunc := range c.checkerMap {
+		isNext := checkFunc(ctx, result, []byte{})
+		if !isNext {
+			break
 		}
 	}
 
