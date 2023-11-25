@@ -7,14 +7,18 @@ import (
 	"github.com/jhunters/timewheel"
 )
 
+type Runnable interface {
+	Run()
+}
+
 var wheel *timewheel.TimeWheel[Runnable]
 
 func GetTimingWheel() *timewheel.TimeWheel[Runnable] {
 	return wheel
 }
 
-func Init() (result *timewheel.TimeWheel[Runnable], err error) {
-	wheel, err = timewheel.New[Runnable](time.Second/2, 60)
+func Init() (*timewheel.TimeWheel[Runnable], error) {
+	wheel, err := timewheel.New[Runnable](time.Second/2, 60)
 	if err != nil {
 		fmt.Printf("Timewheel initialize err: %s\n", err.Error())
 		return nil, err
