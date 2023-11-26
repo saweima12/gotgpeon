@@ -44,13 +44,34 @@ func GetLogger() *zap.SugaredLogger {
 /// Wrapper Function
 /// ----
 
-var (
-	Error  = instance.Error
-	Errorf = instance.Errorf
-	Info   = instance.Info
-	Infof  = instance.Infof
-	Warn   = instance.Warn
-	Warnf  = instance.Warnf
-	Debug  = instance.Debug
-	Debugf = instance.Debugf
-)
+func Error(args ...interface{}) {
+	instance.Error(args...)
+}
+
+func Errorf(template string, args ...interface{}) {
+	instance.Errorf(template, args...)
+}
+
+func Info(args ...interface{}) {
+	instance.Info(args...)
+}
+
+func Infof(template string, args ...interface{}) {
+	instance.Infof(template, args...)
+}
+
+func Warn(args ...interface{}) {
+	instance.Warn(args...)
+}
+
+func Warnf(template string, args ...interface{}) {
+	instance.Warnf(template, args...)
+}
+
+func Debug(args ...interface{}) {
+	instance.Debug(args...)
+}
+
+func Debugf(template string, args ...interface{}) {
+	instance.Debugf(template, args...)
+}

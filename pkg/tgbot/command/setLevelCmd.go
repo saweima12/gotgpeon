@@ -3,8 +3,8 @@ package command
 import (
 	"fmt"
 	"gotgpeon/config"
-	"gotgpeon/logger"
 	"gotgpeon/data/models"
+	"gotgpeon/logger"
 	"gotgpeon/pkg/tgbot/core"
 	"strings"
 	"time"
@@ -36,7 +36,8 @@ func (h *CommandMap) handleSetLevelCmd(helper *core.MessageHelper) {
 	}
 
 	replyMsg := helper.ReplyToMessage
-	targetName := replyMsg.From.FirstName + " " + replyMsg.From.LastName
+
+	targetName := fmt.Sprintf("%s %s", replyMsg.From.FirstName, replyMsg.From.LastName)
 	query := models.MessageRecord{
 		MemberId: replyMsg.From.ID,
 		FullName: targetName,

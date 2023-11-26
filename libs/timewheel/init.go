@@ -11,10 +11,10 @@ type Runnable interface {
 	Run()
 }
 
-var wheel *timewheel.TimeWheel[Runnable]
+var defaultWheel *timewheel.TimeWheel[Runnable]
 
 func GetTimingWheel() *timewheel.TimeWheel[Runnable] {
-	return wheel
+	return defaultWheel
 }
 
 func Init() (*timewheel.TimeWheel[Runnable], error) {
@@ -25,6 +25,8 @@ func Init() (*timewheel.TimeWheel[Runnable], error) {
 	}
 
 	wheel.Start()
+
+	defaultWheel = wheel
 	return wheel, nil
 }
 
@@ -35,7 +37,7 @@ func AddTask(delay time.Duration, taskObj Runnable) (err error) {
 			t.Data.Run()
 		},
 	}
-	_, err = wheel.AddTask(delay, newTask)
+	_, err = defaultWheel.AddTask(delay, newTask)
 	if err != nil {
 		return err
 	}
