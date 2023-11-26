@@ -17,10 +17,11 @@ import (
 )
 
 type MessageHandler interface {
-	HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI, isEdit bool)
+	HandleMessage(message *tgbotapi.Message)
 }
 
 type messageHandler struct {
+	botAPI         *tgbotapi.BotAPI
 	peonService    services.PeonService
 	recordService  services.RecordService
 	botService     services.BotService
@@ -56,6 +57,7 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client, botAPI *tgbotap
 
 	// Initialize command map
 	return &messageHandler{
+		botAPI:         botAPI,
 		peonService:    peonService,
 		recordService:  recordService,
 		botService:     botService,
@@ -65,8 +67,8 @@ func NewMessageHandler(dbConn *gorm.DB, cacheConn *redis.Client, botAPI *tgbotap
 	}
 }
 
-func (h *messageHandler) HandleMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI, isEdit bool) {
-	helper := core.NewMessageHelper(message, bot)
+func (h *messageHandler) HandleMessage(message *tgbotapi.Message) {
+	helper := core.NewMessageHelper(message, h.botAPI)
 
 	// HandleMessage.
 	data, _ := json.MarshalToString(message)
@@ -104,7 +106,7 @@ func (h *messageHandler) getMessageContext(helper *core.MessageHelper, chatCfg *
 		ChatCfg:     chatCfg,
 		CommonCfg:   &commonCfg,
 		Message:     helper,
-		IsWhitelist: isAllowlist,
+		IsAllowlist: isAllowlist,
 		Record:      userRecord,
 	}
 }

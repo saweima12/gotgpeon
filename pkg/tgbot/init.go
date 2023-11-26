@@ -93,12 +93,12 @@ func DeleteWebhook(bot *tgbotapi.BotAPI) error {
 	return nil
 }
 
-func ProcessUpdate(msgHandler handler.MessageHandler, update tgbotapi.Update, botAPI *tgbotapi.BotAPI) {
+func ProcessUpdate(msgHandler handler.MessageHandler, update *tgbotapi.Update) {
 	if update.Message != nil {
-		msgHandler.HandleMessage(update.Message, botAPI, false)
+		msgHandler.HandleMessage(update.Message)
 	}
 	if update.EditedMessage != nil {
-		msgHandler.HandleMessage(update.EditedMessage, botAPI, true)
+		msgHandler.HandleMessage(update.EditedMessage)
 	}
 }
 
@@ -113,7 +113,7 @@ LOOP:
 		case <-c.QuitChan:
 			break LOOP
 		case update := <-c.UpdateChan:
-			ProcessUpdate(msgHandler, update, botAPI)
+			ProcessUpdate(msgHandler, &update)
 		}
 	}
 
