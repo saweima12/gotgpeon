@@ -10,7 +10,7 @@ type MessageContext struct {
 	ChatCfg     *ChatConfig          `json:"chat_cfg"`
 	CommonCfg   *config.CommonConfig `json:"common_cfg"`
 	Message     *core.MessageHelper  `json:"message"`
-	IsWhitelist bool                 `json:"is_whitelist"`
+	IsAllowlist bool                 `json:"is_allowlist`
 	Record      *MessageRecord       `json:"record"`
 }
 
