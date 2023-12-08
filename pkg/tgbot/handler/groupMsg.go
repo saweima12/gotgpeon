@@ -52,7 +52,7 @@ func (h *messageHandler) handleDeleteMessage(helper *core.MessageHelper, text st
 		logger.Infof("[DeleteMessage]: %s", jsonStr)
 
 		// Insert into database
-		err = h.deletedService.InsertDeletedRecord(helper.ChatId(), helper.ContentType(), helper.Message)
+		err = h.deletedService.Insert(helper.ChatId(), helper.ContentType(), helper.Message)
 		if err != nil {
 			logger.Errorf("[handleDeleteMessage] insertIntoDb err: %s", err.Error())
 		}

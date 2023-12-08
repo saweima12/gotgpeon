@@ -33,9 +33,10 @@ func NewChatRepo(dbConn *gorm.DB, redisConn *redis.Client) ChatRepository {
 	}
 }
 
-func (repo *chatRepository) GetAvaliableChatList() (result map[int64]string, err error) {
+func (repo *chatRepository) GetAvaliableChatList() (map[int64]string, error) {
 	// declare result
-	result = make(map[int64]string)
+	var err error
+	result := make(map[int64]string)
 
 	// declare query
 	var resp []*entity.PeonChatConfig

@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type ChatMemberResult struct {
+type ChatMemberInfo struct {
 	ChatId     int64     `gorm:"column:chat_id"`
 	MemberId   int64     `gorm:"column:member_id"`
 	FullName   string    `gorm:"full_name"`

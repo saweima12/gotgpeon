@@ -16,10 +16,10 @@ type RecordService interface {
 }
 
 type recordService struct {
-	RecordRepo repositories.RecordRepository
+	RecordRepo repositories.MemberRecordRepository
 }
 
-func NewRecordService(recordRepo repositories.RecordRepository) RecordService {
+func NewRecordService(recordRepo repositories.MemberRecordRepository) RecordService {
 	return &recordService{
 		RecordRepo: recordRepo,
 	}

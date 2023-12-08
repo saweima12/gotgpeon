@@ -23,14 +23,7 @@ func NewDefaultChatConfig(chatId int64, adminstrators []int64) *ChatConfig {
 		Status:        NG,
 		ChatId:        chatId,
 		Adminstrators: adminstrators,
-		CheckerList: []CheckerConfig{
-			{Name: "Type"},
-			{Name: "Forward"},
-			{Name: "Entities"},
-			{Name: "Viabot"},
-			{Name: "SpchName"},
-			{Name: "SpchContent"},
-		},
+		CheckerList:   []CheckerConfig{},
 	}
 }
 

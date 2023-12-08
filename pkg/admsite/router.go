@@ -15,12 +15,12 @@ func InitRouter(x *gin.Engine) {
 	db := db.GetDB()
 	// declare repository
 	chatRepo := repositories.NewChatRepo(db, rdb)
-	deletedMsgRepo := repositories.NewDeletedMsgRepository(db, rdb)
+	deletedRepo := repositories.NewDeletedMsgRepository(db, rdb)
 	recordRepo := repositories.NewRecordRepository(db, rdb)
 
 	// declare services.
-	deletedServ := services.NewDeletedService(deletedMsgRepo)
-	dataviewServ := services.NewDataviewService(chatRepo, recordRepo)
+	deletedServ := services.NewDeletedService(deletedRepo)
+	dataviewServ := services.NewDataviewService(chatRepo, recordRepo, deletedRepo)
 
 	// declare controller
 	dataviewCon := controller.NewDataViewController(deletedServ, dataviewServ)

@@ -1,7 +1,9 @@
 package repositories
 
 import (
+	"encoding/json"
 	"gotgpeon/data/entity"
+	"gotgpeon/data/models"
 	"gotgpeon/logger"
 	"time"
 
@@ -10,9 +12,9 @@ import (
 )
 
 type DeletedMsgRepository interface {
-	GetDeletedRecordListByChat(chatId int64) ([]*entity.PeonDeletedMessage, error)
-	InsertDeletedRecord(chatId int64, contentType string, jsonBytes []byte) error
-	DeleteOutdatedRecordList() error
+	GetList(chatId int64) ([]*models.DeletedMessage, error)
+	Insert(chatId int64, contentType string, jsonBytes []byte) error
+	CleanOutdated() error
 }
 
 type deletedMsgRepository struct {
@@ -25,17 +27,33 @@ func NewDeletedMsgRepository(dbConn *gorm.DB, cacheConn *redis.Client) DeletedMs
 	}
 }
 
-func (repo *deletedMsgRepository) GetDeletedRecordListByChat(chatId int64) (result []*entity.PeonDeletedMessage, err error) {
-	err = repo.GetDB().Where("chat_id = ?", chatId).Find(&result).Error
+func (repo *deletedMsgRepository) GetList(chatId int64) ([]*models.DeletedMessage, error) {
+
+	var err error
+	var entities []*entity.PeonDeletedMessage
+
+	err = repo.GetDB().
+		Where("chat_id = ?", chatId).
+		Find(&entities).Error
 	if err != nil {
-		logger.Errorf("GetDeletedRecordListByChat err: %s", err.Error())
+		logger.Errorf("[deletedMsgRepository] GetList - err: %s", err.Error())
 		return nil, err
+	}
+
+	result := []*models.DeletedMessage{}
+	for eid := range entities {
+		item := models.DeletedMessage{
+			ContentType: entities[eid].ContentType,
+			Content:     json.RawMessage(entities[eid].MessageJson),
+			RecordTime:  entities[eid].RecordTime.Unix(),
+		}
+		result = append(result, &item)
 	}
 
 	return result, nil
 }
 
-func (repo *deletedMsgRepository) InsertDeletedRecord(chatId int64, contentType string, jsonBytes []byte) error {
+func (repo *deletedMsgRepository) Insert(chatId int64, contentType string, jsonBytes []byte) error {
 	newEntity := entity.PeonDeletedMessage{
 		ChatId:      chatId,
 		ContentType: contentType,
@@ -50,7 +68,7 @@ func (repo *deletedMsgRepository) InsertDeletedRecord(chatId int64, contentType 
 	return nil
 }
 
-func (repo *deletedMsgRepository) DeleteOutdatedRecordList() error {
+func (repo *deletedMsgRepository) CleanOutdated() error {
 	// process parameter
 	now := time.Now().UTC()
 	offset := now.AddDate(0, 0, -14)

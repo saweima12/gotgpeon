@@ -1,18 +1,18 @@
 package services
 
 import (
+	"gotgpeon/data/models"
 	"gotgpeon/libs/json"
 	"gotgpeon/logger"
-	"gotgpeon/data/entity"
 	"gotgpeon/pkg/repositories"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type DeletedService interface {
-	GetDeletedRecordListByChat(chatId int64) []*entity.PeonDeletedMessage
-	InsertDeletedRecord(chatId int64, contentType string, message *tgbotapi.Message) error
-	DeleteOutdatedRecordList() error
+	GetListByChat(chatId int64) []*models.DeletedMessage
+	Insert(chatId int64, contentType string, message *tgbotapi.Message) error
+	CleanOutdated() error
 }
 
 type deletedService struct {
@@ -25,25 +25,25 @@ func NewDeletedService(deletedMsgRepo repositories.DeletedMsgRepository) Deleted
 	}
 }
 
-func (s *deletedService) GetDeletedRecordListByChat(chatId int64) []*entity.PeonDeletedMessage {
-	records, err := s.DeletedMsgRepo.GetDeletedRecordListByChat(chatId)
+func (s *deletedService) GetListByChat(chatId int64) []*models.DeletedMessage {
+	records, err := s.DeletedMsgRepo.GetList(chatId)
 	if err != nil {
-		return []*entity.PeonDeletedMessage{}
+		return []*models.DeletedMessage{}
 	}
 	return records
 }
 
-func (s *deletedService) DeleteOutdatedRecordList() error {
-	return s.DeletedMsgRepo.DeleteOutdatedRecordList()
+func (s *deletedService) CleanOutdated() error {
+	return s.DeletedMsgRepo.CleanOutdated()
 }
 
-func (s *deletedService) InsertDeletedRecord(chatId int64, contentType string, message *tgbotapi.Message) error {
+func (s *deletedService) Insert(chatId int64, contentType string, message *tgbotapi.Message) error {
 	jsonBytes, err := json.Marshal(message)
 	if err != nil {
 		logger.Errorf("InsertDeletedRecord marshal err: %s || msg: %v", err.Error(), message)
 	}
 	// Add to database.
-	err = s.DeletedMsgRepo.InsertDeletedRecord(chatId, contentType, jsonBytes)
+	err = s.DeletedMsgRepo.Insert(chatId, contentType, jsonBytes)
 	if err != nil {
 		logger.Errorf("InsertDeletedRecord err: %s", err.Error())
 	}
